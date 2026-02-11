@@ -1,21 +1,56 @@
 {
-  "name": "AImum",
+  "name": "AImum - 一人公司 AI 操作系统",
   "short_name": "AImum",
-  "description": "AI Operating System for One-Person Companies",
+  "description": "一人公司 AI 操作系统，让创业者像搭积木一样组建 AI 团队",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0f0f23",
   "theme_color": "#667eea",
+  "theme_color_light": "#667eea",
+  "categories": ["productivity", "utilities"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "💬 AI 对话",
+      "short_name": "对话",
+      "description": "开始与 AI 助手对话",
+      "url": "/chat.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "💎 Token 管理",
+      "short_name": "Token",
+      "description": "查看和管理 Token 余额",
+      "url": "/tokens.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "🧩 插件市场",
+      "short_name": "插件",
+      "description": "浏览和安装插件",
+      "url": "/plugins.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "screenshots": [],
+  "prefer_related_applications": false
 }
