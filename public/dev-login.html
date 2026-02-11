@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - Dev Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #f4f4f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #111118;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 30px;
+      width: 320px;
+    }
+    h1 { font-size: 24px; margin-bottom: 20px; text-align: center; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      color: white;
+    }
+    .btn-secondary {
+      background: #1a1a24;
+      color: #f4f4f5;
+    }
+    .info {
+      font-size: 12px;
+      color: #71717a;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🦁 AImum 开发登录</h1>
+    <button class="btn btn-primary" onclick="devLogin()">🚀 快速登录（开发模式）</button>
+    <button class="btn btn-secondary" onclick="realLogin()">📱 正规登录</button>
+    <div class="info">点击"快速登录"即可跳过验证</div>
+  </div>
+  
+  <script>
+    function devLogin() {
+      localStorage.setItem('aimum_token', 'dev_token_12345');
+      localStorage.setItem('aimum_user', JSON.stringify({
+        id: 'dev_user',
+        phone: '13800000000',
+        name: '开发者',
+        tokens: 10000
+      }));
+      alert('✅ 登录成功！正在跳转...');
+      window.location.href = '/core.html';
+    }
+    
+    function realLogin() {
+      window.location.href = '/auth.html';
+    }
+    
+    // 已登录直接跳转
+    if (localStorage.getItem('aimum_token')) {
+      window.location.href = '/core.html';
+    }
+  </script>
+</body>
+</html>
