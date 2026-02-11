@@ -201,14 +201,17 @@
       }
     }
     
+    // 初始化桌面路径
+    const DESKTOP_PATH = 'C:\\Users\\dongd\\Desktop';
+    
     function goDesktop() {
-      document.getElementById('pathInput').value = '%USERPROFILE%\\Desktop';
-      currentPath = '%USERPROFILE%\\Desktop';
+      currentPath = DESKTOP_PATH;
+      document.getElementById('pathInput').value = currentPath;
       listDir();
     }
     
     async function listDir() {
-      const input = document.getElementById('pathInput').value.trim();
+      let input = document.getElementById('pathInput').value.trim();
       currentPath = input || currentPath;
       document.getElementById('pathInput').value = currentPath;
       

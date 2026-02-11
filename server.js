@@ -175,26 +175,32 @@ function parseNaturalLanguage(input) {
 
 // 解析自然语言命令
 function parseCommand(input) {
-  // 先尝试自然语言转换
-  const naturalResult = parseNaturalLanguage(input);
+  const trimmed = input.trim();
+  
+  // 1. 先尝试自然语言转换
+  const naturalResult = parseNaturalLanguage(trimmed);
   if (naturalResult) {
-    console.log('解析成功:', input, '->', naturalResult);
     return naturalResult;
   }
   
-  console.log('解析失败，原样返回:', input);
+  const lower = trimmed.toLowerCase();
   
-  // 检查是否匹配别名
-  const lower = input.toLowerCase();
+  // 2. 检查是否匹配别名
   for (const [key, value] of Object.entries(COMMAND_ALIASES)) {
     if (lower.includes(key.toLowerCase())) {
       return value;
     }
   }
   
-  // 如果是简单命令，直接返回
-  if (/^[a-z][a-z0-9-]*(\s+[a-z0-9-]+)*$/.test(lower)) {
-    return input;
+  // 3. Windows 原生命令直接返回
+  const windowsCommands = ['dir', 'type', 'copy', 'move', 'del', 'mkdir', 'rd', 'cd', 'echo', 'cls', 'date', 'time', 'ver', 'vol', 'path', 'prompt', 'title', 'mode', 'color'];
+  if (windowsCommands.includes(lower.split(' ')[0])) {
+    return trimmed;
+  }
+  
+  // 4. 如果是简单命令，直接返回
+  if (/^[a-z][a-z0-9-]*(\s+[%a-z0-9\-_\\\/."]+)*$/i.test(trimmed)) {
+    return trimmed;
   }
   
   return null;
