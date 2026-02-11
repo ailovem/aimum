@@ -33,7 +33,18 @@
     
     "save": "node scripts/session-hook.js manual_save",
     
-    "status": "node scripts/smart-start.js && node scripts/tracker.js"
+    "status": "node scripts/smart-start.js && node scripts/tracker.js",
+    
+    "test": "node scripts/test.js",
+    "test:unit": "node scripts/test.js --utils",
+    "test:api": "node scripts/test.js --api",
+    "test:all": "node scripts/test.js",
+    
+    "sync": "node scripts/auto-sync.js",
+    "sync:status": "node scripts/auto-sync.js status",
+    "sync:memory": "node scripts/auto-sync.js memory",
+    
+    "docs": "start file:///D:/openwork/00_active/aimum/docs/USER_GUIDE.md"
   },
   "dependencies": {
     "axios": "^1.6.0",

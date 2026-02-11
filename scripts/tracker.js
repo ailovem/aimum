@@ -40,8 +40,8 @@ const PROGRESS = {
       { name: '前端 UI 开发', hours: 12, status: 'done', pr: null },
       { name: 'PWA 配置', hours: 2, status: 'done', pr: null },
       { name: '部署配置', hours: 2, status: 'done', pr: null },
-      { name: '单元测试', hours: 4, status: 'todo', pr: null },
-      { name: '文档编写', hours: 4, status: 'todo', pr: null }
+      { name: '单元测试', hours: 4, status: 'done', pr: null },
+      { name: '文档编写', hours: 4, status: 'done', pr: null }
     ]
   },
   phase2: {
