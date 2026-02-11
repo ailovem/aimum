@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - AI 对话</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --input-bg: #252542;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+      --user-msg: #3b82f6;
+      --ai-msg: #374151;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+    }
+    
+    /* 侧边栏 */
+    .sidebar {
+      width: 280px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .logo {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .new-chat-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .new-chat-btn:hover {
+      background: #5a67d8;
+    }
+    
+    .conversations {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    
+    .conversation-item {
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .conversation-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .conversation-item.active {
+      background: rgba(102, 126, 234, 0.2);
+    }
+    
+    .conversation-icon {
+      font-size: 20px;
+    }
+    
+    .conversation-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .conversation-title {
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .conversation-time {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 设置区 */
+    .settings-section {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .settings-title {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .setting-row {
+      margin-bottom: 16px;
+    }
+    
+    .setting-label {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .setting-select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .setting-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    /* 主聊天区 */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .chat-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .chat-model {
+      font-size: 13px;
+      color: var(--text-dim);
+      background: var(--input-bg);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+    
+    /* 消息区 */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    
+    .message {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .message.user .message-avatar {
+      background: var(--primary);
+    }
+    
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .message-content {
+      background: var(--ai-msg);
+      padding: 14px 18px;
+      border-radius: 16px;
+      max-width: 70%;
+      line-height: 1.6;
+    }
+    
+    .message.user .message-content {
+      background: var(--user-msg);
+    }
+    
+    .message-role {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    
+    .message-text {
+      font-size: 15px;
+    }
+    
+    .message-text p {
+      margin-bottom: 8px;
+    }
+    
+    .message-text p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .message-text code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+    }
+    
+    .message-text pre {
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    
+    /* 输入区 */
+    .input-area {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .input-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .input-wrapper {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    
+    .input-wrapper:focus-within {
+      border-color: var(--primary);
+    }
+    
+    .input-textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      resize: none;
+      max-height: 150px;
+    }
+    
+    .input-textarea:focus {
+      outline: none;
+    }
+    
+    .input-textarea::placeholder {
+      color: var(--text-dim);
+    }
+    
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .send-btn:hover {
+      background: #5a67d8;
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .input-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 12px;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    
+    .empty-desc {
+      font-size: 14px;
+      max-width: 400px;
+    }
+    
+    /* 提示词模板 */
+    .prompts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+      max-width: 600px;
+    }
+    
+    .prompt-item {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .prompt-item:hover {
+      border-color: var(--primary);
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .prompt-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .prompt-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .prompt-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 加载动画 */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 8px 0;
+    }
+    
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      
+      .message-content {
+        max-width: 90%;
+      }
+      
+      .prompts {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">🦁 AImum</div>
+      <button class="new-chat-btn" onclick="newChat()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        新建对话
+      </button>
+    </div>
+    
+    <div class="conversations" id="conversations">
+      <!-- 对话列表 -->
+    </div>
+    
+    <div class="settings-section">
+      <div class="settings-title">模型选择</div>
+      
+      <div class="setting-row">
+        <label class="setting-label">AI 模型</label>
+        <select class="setting-select" id="modelSelect" onchange="changeModel()">
+          <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+          <option value="claude-haiku-3-20250514">Claude Haiku 3</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="deepseek-chat">DeepSeek Chat</option>
+        </select>
+      </div>
+      
+      <div class="setting-row">
+        <label class="setting-label">角色</label>
+        <select class="setting-select" id="roleSelect" onchange="changeRole()">
+          <option value="default">默认助手</option>
+          <option value="coder">代码专家</option>
+          <option value="writer">写作助手</option>
+          <option value="analyst">数据分析师</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 主聊天区 -->
+  <div class="main">
+    <div class="chat-header">
+      <div class="chat-title" id="chatTitle">AI 对话</div>
+      <div class="chat-model" id="currentModel">Claude Sonnet 4</div>
+    </div>
+    
+    <div class="messages" id="messages">
+      <!-- 空状态 -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">💬</div>
+        <div class="empty-title">开始与 AI 对话</div>
+        <div class="empty-desc">选择一个角色，开始你的智能对话之旅</div>
+        
+        <div class="prompts">
+          <div class="prompt-item" onclick="usePrompt('coder', '帮我写一个 Python 快速排序算法')">
+            <div class="prompt-icon">👨‍💻</div>
+            <div class="prompt-title">代码专家</div>
+            <div class="prompt-desc">写算法、调试代码</div>
+          </div>
+          
+          <div class="prompt-item" onclick="usePrompt('writer', '帮我写一篇产品发布文案')">
+            <div class="prompt-icon">✍️</div>
+            <div class="prompt-title">写作助手</div>
+            <div class="prompt-desc">文章、文案、翻译</div>
+          </div>
+          
+          <div class="prompt-item" onclick="usePrompt('analyst', '分析这份销售数据并给出建议')">
+            <div class="prompt-icon">📊</div>
+            <div class="prompt-title">数据分析师</div>
+            <div class="prompt-desc">数据分析、图表解读</div>
+          </div>
+          
+          <div class="prompt-item" onclick="usePrompt('default', '帮我规划下今天的工作')">
+            <div class="prompt-icon">📋</div>
+            <div class="prompt-title">默认助手</div>
+            <div class="prompt-desc">日常问答、任务规划</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="input-container">
+        <div class="input-wrapper">
+          <textarea 
+            class="input-textarea" 
+            id="messageInput"
+            placeholder="输入消息..."
+            rows="1"
+            onkeydown="handleKeydown(event)"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">
+          按 Enter 发送，Shift + Enter 换行
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 配置
+    const API_BASE = '/api/chat';
+    const API_AUTH = '/api/auth';
+    
+    // 状态
+    let currentConversationId = null;
+    let currentModel = 'claude-sonnet-4-20250514';
+    let currentRole = 'default';
+    let isLoading = false;
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLogin();
+      loadConversations();
+      autoResizeTextarea();
+    });
+    
+    // 检查登录
+    async function checkLogin() {
+      const token = localStorage.getItem('aimum_token');
+      
+      if (!token) {
+        // 未登录，跳转到登录页
+        window.location.href = '/auth.html';
+        return;
+      }
+      
+      // 验证 Token
+      try {
+        const res = await fetch(`${API_AUTH}/verify`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        
+        if (!data.success) {
+          localStorage.removeItem('aimum_token');
+          localStorage.removeItem('aimum_user');
+          window.location.href = '/auth.html';
+        }
+      } catch (e) {
+        console.error('验证失败:', e);
+      }
+    }
+    
+    // 加载对话列表
+    async function loadConversations() {
+      const conversationsEl = document.getElementById('conversations');
+      conversationsEl.innerHTML = `
+        <div class="conversation-item active" onclick="selectConversation(null)">
+          <span class="conversation-icon">💬</span>
+          <div class="conversation-info">
+            <div class="conversation-title">新对话</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // 选择对话
+    function selectConversation(conversationId) {
+      currentConversationId = conversationId;
+      
+      // 更新 UI
+      document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      if (conversationId) {
+        loadHistory(conversationId);
+      } else {
+        showEmptyState();
+      }
+    }
+    
+    // 新对话
+    function newChat() {
+      currentConversationId = null;
+      showEmptyState();
+      
+      document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector('.conversation-item').classList.add('active');
+    }
+    
+    // 显示空状态
+    function showEmptyState() {
+      document.getElementById('messages').innerHTML = `
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">💬</div>
+          <div class="empty-title">开始与 AI 对话</div>
+          <div class="empty-desc">选择一个角色，开始你的智能对话之旅</div>
+          
+          <div class="prompts">
+            <div class="prompt-item" onclick="usePrompt('coder', '帮我写一个 Python 快速排序算法')">
+              <div class="prompt-icon">👨‍💻</div>
+              <div class="prompt-title">代码专家</div>
+              <div class="prompt-desc">写算法、调试代码</div>
+            </div>
+            
+            <div class="prompt-item" onclick="usePrompt('writer', '帮我写一篇产品发布文案')">
+              <div class="prompt-icon">✍️</div>
+              <div class="prompt-title">写作助手</div>
+              <div class="prompt-desc">文章、文案、翻译</div>
+            </div>
+            
+            <div class="prompt-item" onclick="usePrompt('analyst', '分析这份销售数据并给出建议')">
+              <div class="prompt-icon">📊</div>
+              <div class="prompt-title">数据分析师</div>
+              <div class="prompt-desc">数据分析、图表解读</div>
+            </div>
+            
+            <div class="prompt-item" onclick="usePrompt('default', '帮我规划下今天的工作')">
+              <div class="prompt-icon">📋</div>
+              <div class="prompt-title">默认助手</div>
+              <div class="prompt-desc">日常问答、任务规划</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // 使用提示词
+    function usePrompt(role, prompt) {
+      document.getElementById('roleSelect').value = role;
+      changeRole();
+      
+      document.getElementById('messageInput').value = prompt;
+      autoResizeTextarea();
+    }
+    
+    // 改变模型
+    function changeModel() {
+      currentModel = document.getElementById('modelSelect').value;
+      const modelNames = {
+        'claude-sonnet-4-20250514': 'Claude Sonnet 4',
+        'claude-haiku-3-20250514': 'Claude Haiku 3',
+        'gpt-4o': 'GPT-4o',
+        'gpt-4o-mini': 'GPT-4o Mini',
+        'deepseek-chat': 'DeepSeek Chat'
+      };
+      document.getElementById('currentModel').textContent = modelNames[currentModel];
+    }
+    
+    // 改变角色
+    function changeRole() {
+      currentRole = document.getElementById('roleSelect').value;
+    }
+    
+    // 处理键盘事件
+    function handleKeydown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+    
+    // 自动调整输入框高度
+    function autoResizeTextarea() {
+      const textarea = document.getElementById('messageInput');
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    }
+    
+    // 发送消息
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      
+      if (!message || isLoading) return;
+      
+      // 清空空状态
+      const emptyState = document.getElementById('emptyState');
+      if (emptyState) {
+        emptyState.remove();
+      }
+      
+      // 添加用户消息
+      addMessage('user', message);
+      
+      // 清空输入框
+      input.value = '';
+      autoResizeTextarea();
+      
+      // 设置加载状态
+      isLoading = true;
+      document.getElementById('sendBtn').disabled = true;
+      
+      // 添加加载动画
+      const loadingId = addLoadingMessage();
+      
+      try {
+        const token = localStorage.getItem('aimum_token');
+        
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            message,
+            conversationId: currentConversationId,
+            model: currentModel,
+            role: currentRole
+          })
+        });
+        
+        const data = await res.json();
+        
+        // 移除加载动画
+        removeMessage(loadingId);
+        
+        if (data.success) {
+          // 更新对话 ID
+          if (!currentConversationId && data.data.conversationId) {
+            currentConversationId = data.data.conversationId;
+          }
+          
+          // 添加 AI 回复
+          addMessage('assistant', data.data.message.content);
+        } else {
+          addMessage('assistant', `错误: ${data.error}`);
+        }
+      } catch (error) {
+        removeMessage(loadingId);
+        addMessage('assistant', `网络错误，请重试`);
+      }
+      
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+    }
+    
+    // 添加消息到界面
+    function addMessage(role, content) {
+      const messagesEl = document.getElementById('messages');
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${role === 'user' ? '👤' : '🦁'}</div>
+        <div class="message-content">
+          <div class="message-role">${role === 'user' ? '你' : 'AI 助手'}</div>
+          <div class="message-text">${formatMessage(content)}</div>
+        </div>
+      `;
+      
+      messagesEl.appendChild(messageDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    
+    // 添加加载动画
+    function addLoadingMessage() {
+      const messagesEl = document.getElementById('messages');
+      const loadingId = 'loading_' + Date.now();
+      
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message assistant';
+      loadingDiv.id = loadingId;
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">🦁</div>
+        <div class="message-content">
+          <div class="message-role">AI 助手</div>
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      `;
+      
+      messagesEl.appendChild(loadingDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+      return loadingId;
+    }
+    
+    // 移除消息
+    function removeMessage(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+    
+    // 格式化消息
+    function formatMessage(text) {
+      // 转义 HTML
+      let formatted = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      
+      // 代码块
+      formatted = formatted.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+      
+      // 行内代码
+      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+      
+      // 换行
+      formatted = formatted.replace(/\n/g, '<br>');
+      
+      return formatted;
+    }
+    
+    // 加载历史消息
+    async function loadHistory(conversationId) {
+      const token = localStorage.getItem('aimum_token');
+      
+      try {
+        const res = await fetch(`${API_BASE}/history?conversationId=${conversationId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        
+        if (data.success && data.data.history) {
+          // 清空消息区
+          document.getElementById('messages').innerHTML = '';
+          
+          // 显示历史消息
+          data.data.history.forEach(msg => {
+            addMessage(msg.role, msg.content);
+          });
+        }
+      } catch (error) {
+        console.error('加载历史失败:', error);
+      }
+    }
+  </script>
+</body>
+</html>
