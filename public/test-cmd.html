@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试命令 - AImum</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #0d1117;
+      color: #c9d1d9;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { color: #58a6ff; }
+    .test-btn {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .test-btn:hover { background: #2ea043; }
+    #result {
+      background: #161b22;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      min-height: 100px;
+    }
+    .cmd { color: #d2a8ff; }
+    .success { color: #3fb950; }
+    .error { color: #f85149; }
+  </style>
+</head>
+<body>
+  <h1>🧪 命令执行测试</h1>
+  
+  <h3>快速测试：</h3>
+  <button class="test-btn" onclick="run('node -v')">测试 node -v</button>
+  <button class="test-btn" onclick="run('pwd')">测试 pwd</button>
+  <button class="test-btn" onclick="run('ls -la')">测试 ls -la</button>
+  <button class="test-btn" onclick="run('whoami')">测试 whoami</button>
+  
+  <h3>中文测试：</h3>
+  <button class="test-btn" onclick="run('创建文件夹 test')">创建文件夹 test</button>
+  <button class="test-btn" onclick="run('创建文件 test.txt')">创建文件 test.txt</button>
+  
+  <h3>手动输入：</h3>
+  <input type="text" id="cmdInput" style="width: 400px; padding: 8px;" placeholder="输入命令...">
+  <button class="test-btn" onclick="run(document.getElementById('cmdInput').value)">执行</button>
+  
+  <h3>结果：</h3>
+  <div id="result" class="cmd">点击上方按钮测试...</div>
+  
+  <script>
+    async function run(cmd) {
+      if (!cmd.trim()) return;
+      const result = document.getElementById('result');
+      result.innerHTML = `<span class="cmd">$ ${cmd}</span>\n\n`;
+      result.innerHTML += `<span style="color: #8b949e;">执行中...</span>`;
+      
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        
+        if (data.parsedCommand) {
+          result.innerHTML += `\n<span style="color: #8b949e;">解析为: ${data.parsedCommand}</span>\n`;
+        }
+        
+        if (data.success) {
+          result.innerHTML += `<span class="success">✅ 成功!</span>\n\n`;
+          result.innerHTML += data.output || '(无输出)';
+        } else {
+          result.innerHTML += `<span class="error">❌ 失败!</span>\n`;
+          result.innerHTML += data.error || '未知错误';
+        }
+      } catch (e) {
+        result.innerHTML += `<span class="error">❌ 网络错误: ${e.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

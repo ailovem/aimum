@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>文件操作 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #f4f4f5;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .back {
+      background: #111118;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .card {
+      background: #111118;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    
+    /* 路径输入 */
+    .path-group { display: flex; gap: 12px; margin-bottom: 16px; }
+    .path-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-family: monospace;
+    }
+    .btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.secondary { background: #1a1a24; }
+    
+    /* 按钮组 */
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .action-btn {
+      padding: 10px 20px;
+      background: #1a1a24;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .action-btn:hover { border-color: #6366f1; }
+    
+    /* 输出区域 */
+    .output {
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 13px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+    .success { color: #3fb950; }
+    .error { color: #f85149; }
+    .info { color: #58a6ff; }
+    
+    /* 文件列表 */
+    .file-list { margin-top: 16px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: #1a1a24;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .file-icon { font-size: 20px; }
+    .file-name { flex: 1; }
+    .file-size { color: #71717a; font-size: 12px; }
+    
+    /* 编辑器 */
+    .editor {
+      width: 100%;
+      min-height: 200px;
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 13px;
+      resize: vertical;
+    }
+    .editor:focus { outline: none; border-color: #6366f1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h1>📁 文件操作</h1>
+      <a href="core.html" class="back">← 返回</a>
+    </div>
+    
+    <!-- 路径选择 -->
+    <div class="card">
+      <div class="title">📂 选择目录</div>
+      <div class="path-group">
+        <input type="text" class="path-input" id="pathInput" value="%USERPROFILE%\Desktop" placeholder="输入路径...">
+        <button class="btn" onclick="listDir()">浏览</button>
+        <button class="btn secondary" onclick="goDesktop()">桌面</button>
+      </div>
+      
+      <div class="actions">
+        <button class="action-btn" onclick="listDir()">📋 列出文件</button>
+        <button class="action-btn" onclick="readFile()">📖 读取文件</button>
+        <button class="action-btn" onclick="newFile()">📄 新建文件</button>
+        <button class="action-btn" onclick="newFolder()">📁 新建文件夹</button>
+        <button class="action-btn" onclick="deleteItem()">🗑️ 删除</button>
+      </div>
+      
+      <div id="fileList" class="file-list"></div>
+    </div>
+    
+    <!-- 读取/编辑 -->
+    <div class="card">
+      <div class="title">📝 文件内容</div>
+      <textarea class="editor" id="fileEditor" placeholder="选择文件后显示内容..."></textarea>
+      <div style="margin-top: 12px; display: flex; gap: 10px;">
+        <button class="btn" onclick="saveFile()">💾 保存</button>
+        <button class="btn secondary" onclick="clearEditor()">清空</button>
+      </div>
+    </div>
+    
+    <!-- 输出 -->
+    <div class="card">
+      <div class="title">📟 执行结果</div>
+      <div class="output" id="output">等待操作...</div>
+    </div>
+  </div>
+  
+  <script>
+    let currentPath = '%USERPROFILE%\\Desktop';
+    let currentFile = null;
+    
+    function log(msg, type = 'info') {
+      const out = document.getElementById('output');
+      const time = new Date().toLocaleTimeString('zh-CN');
+      out.innerHTML += `<span class="${type}">[${time}] ${msg}</span>\n`;
+      out.scrollTop = out.scrollHeight;
+    }
+    
+    function clearLog() {
+      document.getElementById('output').innerHTML = '等待操作...\n';
+    }
+    
+    async function execCmd(cmd, desc) {
+      log(`${desc}: ${cmd}`);
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        if (data.success) {
+          log(`✅ 成功!`, 'success');
+          return data.output || '';
+        } else {
+          log(`❌ 失败: ${data.error}`, 'error');
+          return null;
+        }
+      } catch (e) {
+        log(`❌ 网络错误: ${e.message}`, 'error');
+        return null;
+      }
+    }
+    
+    function goDesktop() {
+      document.getElementById('pathInput').value = '%USERPROFILE%\\Desktop';
+      currentPath = '%USERPROFILE%\\Desktop';
+      listDir();
+    }
+    
+    async function listDir() {
+      const input = document.getElementById('pathInput').value.trim();
+      currentPath = input || currentPath;
+      document.getElementById('pathInput').value = currentPath;
+      
+      const output = await execCmd(`dir "${currentPath}"`, '列出目录');
+      if (output) {
+        parseAndShowFiles(output);
+      }
+    }
+    
+    function parseAndShowFiles(output) {
+      const list = document.getElementById('fileList');
+      const lines = output.split('\n');
+      const files = [];
+      
+      // 解析 dir 输出
+      for (const line of lines) {
+        // 目录
+        const dirMatch = line.match(/<DIR>\s+(.+)/);
+        if (dirMatch) {
+          files.push({ name: dirMatch[1].trim(), type: 'folder', icon: '📁' });
+          continue;
+        }
+        
+        // 文件
+        const fileMatch = line.match(/(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}\s+[AP]M)?\s+([\d,]+)\s+(.+)/);
+        if (fileMatch) {
+          const name = fileMatch[4].trim();
+          if (name !== '.' && name !== '..') {
+            const ext = name.split('.').pop().toLowerCase();
+            const icons = {
+              'txt': '📄', 'js': '📜', 'html': '🌐', 'css': '🎨',
+              'json': '📋', 'md': '📝', 'png': '🖼️', 'jpg': '🖼️',
+              'exe': '⚙️', 'zip': '📦', 'pdf': '📕'
+            };
+            files.push({ 
+              name: name, 
+              type: 'file', 
+              icon: icons[ext] || '📄',
+              size: fileMatch[3]
+            });
+          }
+        }
+      }
+      
+      if (files.length === 0) {
+        list.innerHTML = '<div style="color: #71717a; text-align: center;">目录为空</div>';
+        return;
+      }
+      
+      list.innerHTML = files.map(f => `
+        <div class="file-item" onclick="selectItem('${f.name}', '${f.type}')" style="cursor: pointer;">
+          <span class="file-icon">${f.icon}</span>
+          <span class="file-name">${f.name}</span>
+          <span class="file-size">${f.type === 'file' ? f.size : '文件夹'}</span>
+        </div>
+      `).join('');
+    }
+    
+    function selectItem(name, type) {
+      currentFile = name;
+      const fullPath = `${currentPath}\\${name}`;
+      document.getElementById('pathInput').value = fullPath;
+      
+      if (type === 'folder') {
+        currentPath = fullPath;
+        listDir();
+      } else {
+        readFileContent(fullPath);
+      }
+    }
+    
+    async function readFileContent(path) {
+      const output = await execCmd(`type "${path}"`, '读取文件');
+      if (output) {
+        document.getElementById('fileEditor').value = output;
+        log(`✅ 已加载文件内容`, 'success');
+      }
+    }
+    
+    async function readFile() {
+      const path = document.getElementById('pathInput').value.trim();
+      if (!path) {
+        log('❌ 请输入文件路径', 'error');
+        return;
+      }
+      await readFileContent(path);
+    }
+    
+    async function saveFile() {
+      const path = document.getElementById('pathInput').value.trim();
+      const content = document.getElementById('fileEditor').value;
+      
+      if (!path) {
+        log('❌ 请先选择或输入文件路径', 'error');
+        return;
+      }
+      
+      // 临时保存到临时目录，然后移动
+      const tempPath = '%TEMP%\\aimum_temp.txt';
+      log('保存中...');
+      
+      // 先写入临时文件
+      const res = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: `echo "${content.replace(/"/g, '""')}" > "${tempPath}"` })
+      });
+      
+      // 复制到目标位置
+      const output = await execCmd(`copy "${tempPath}" "${path}" /y`, '保存文件');
+      if (output !== null) {
+        log(`✅ 已保存: ${path}`, 'success');
+      }
+    }
+    
+    async function newFile() {
+      const name = prompt('输入文件名:');
+      if (!name) return;
+      
+      const path = `${currentPath}\\${name}`;
+      const output = await execCmd(`echo. > "${path}"`, '新建文件');
+      if (output !== null) {
+        log(`✅ 已创建文件: ${path}`, 'success');
+        listDir();
+      }
+    }
+    
+    async function newFolder() {
+      const name = prompt('输入文件夹名:');
+      if (!name) return;
+      
+      const path = `${currentPath}\\${name}`;
+      const output = await execCmd(`mkdir "${path}"`, '新建文件夹');
+      if (output !== null) {
+        log(`✅ 已创建文件夹: ${path}`, 'success');
+        listDir();
+      }
+    }
+    
+    async function deleteItem() {
+      const path = document.getElementById('pathInput').value.trim();
+      if (!path) {
+        log('❌ 请先选择文件或文件夹', 'error');
+        return;
+      }
+      
+      if (!confirm(`确定删除 ${path} ?`)) return;
+      
+      const output = await execCmd(`del /q "${path}" 2>nul || rmdir /s /q "${path}"`, '删除');
+      if (output !== null) {
+        log(`✅ 已删除: ${path}`, 'success');
+        document.getElementById('pathInput').value = currentPath;
+        document.getElementById('fileEditor').value = '';
+        listDir();
+      }
+    }
+    
+    function clearEditor() {
+      document.getElementById('fileEditor').value = '';
+    }
+    
+    // 初始化
+    window.onload = () => {
+      log('📁 文件管理器已就绪', 'info');
+      listDir();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>命令输入测试</title>
+</head>
+<body style="background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px;">
+  <h2>💬 输入命令测试</h2>
+  
+  <input type="text" id="cmdInput" style="width: 500px; padding: 12px; font-size: 16px; border-radius: 5px; border: 1px solid #333;" placeholder="输入命令...">
+  <button onclick="execute()" style="padding: 12px 24px; font-size: 16px; background: #238636; color: #fff; border: none; border-radius: 5px; cursor: pointer;">执行</button>
+  
+  <div style="margin-top: 15px;">
+    <button onclick="setCmd('mkdir test1')" style="padding: 5px 10px; margin: 3px; cursor: pointer;">mkdir test1</button>
+    <button onclick="setCmd('mkdir 文件夹名')" style="padding: 5px 10px; margin: 3px; cursor: pointer;">mkdir 中文名</button>
+    <button onclick="setCmd('创建文件夹 abc')" style="padding: 5px 10px; margin: 3px; cursor: pointer;">创建文件夹 abc</button>
+    <button onclick="setCmd('dir')" style="padding: 5px 10px; margin: 3px; cursor: pointer;">dir (列出文件)</button>
+  </div>
+  
+  <pre id="output" style="background: #0d0d0d; padding: 15px; margin-top: 20px; border-radius: 5px; white-space: pre-wrap; min-height: 100px;"></pre>
+  
+  <script>
+    function setCmd(text) {
+      document.getElementById('cmdInput').value = text;
+    }
+    
+    async function execute() {
+      const cmd = document.getElementById('cmdInput').value.trim();
+      if (!cmd) return;
+      
+      const output = document.getElementById('output');
+      output.textContent = '$ ' + cmd + '\n\n执行中...';
+      
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: cmd})
+        });
+        const data = await res.json();
+        
+        let text = '';
+        if (data.success) {
+          text = '✅ 成功!\n';
+          text += '输出: ' + (data.output || '(空)');
+        } else {
+          text = '❌ 失败\n';
+          text += '错误: ' + (data.error || '未知');
+        }
+        output.textContent = '$ ' + cmd + '\n\n' + text;
+      } catch (e) {
+        output.textContent = '$ ' + cmd + '\n\n❌ 网络错误: ' + e.message;
+      }
+    }
+    
+    document.getElementById('cmdInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') execute();
+    });
+  </script>
+</body>
+</html>

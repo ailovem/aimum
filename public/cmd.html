@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AImum - 命令执行</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #f4f4f5;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { margin-bottom: 20px; }
+    .input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    input {
+      flex: 1;
+      padding: 14px 18px;
+      background: #111118;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-family: monospace;
+    }
+    input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    button {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { transform: translateY(-2px); }
+    .output {
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: monospace;
+      min-height: 200px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+    .quick {
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .quick button {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: #1a1a24;
+    }
+    .success { color: #3fb950; }
+    .error { color: #f85149; }
+    .cmd { color: #58a6ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💻 AImum 命令执行</h1>
+    
+    <div class="quick">
+      <button onclick="setCmd('mkdir test')">mkdir test</button>
+      <button onclick="setCmd('mkdir 我的文件夹')">mkdir 我的文件夹</button>
+      <button onclick="setCmd('创建一个  测试 文件夹')">创建一个文件夹</button>
+      <button onclick="setCmd('dir')">dir (列出文件)</button>
+      <button onclick="setCmd('whoami')">whoami</button>
+    </div>
+    
+    <div class="input-group">
+      <input type="text" id="cmd" placeholder="输入命令...例如: mkdir 我的文件夹" onkeydown="if(event.key==='Enter')execute()">
+      <button onclick="execute()">执行</button>
+    </div>
+    
+    <div class="output" id="output">💬 输入命令并执行...</div>
+  </div>
+  
+  <script>
+    const output = document.getElementById('output');
+    
+    function setCmd(text) {
+      document.getElementById('cmd').value = text;
+      execute();
+    }
+    
+    async function execute() {
+      const cmd = document.getElementById('cmd').value.trim();
+      if (!cmd) return;
+      
+      output.innerHTML = `<span class="cmd">$ ${cmd}</span>\n\n执行中...`;
+      
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: cmd})
+        });
+        const data = await res.json();
+        
+        let html = `<span class="cmd">$ ${cmd}</span>\n\n`;
+        
+        if (data.success) {
+          html += `<span class="success">✅ 成功!</span>\n`;
+          html += `输出: ${data.output || '(空)'}`;
+        } else {
+          html += `<span class="error">❌ 失败</span>\n`;
+          html += `错误: ${data.error || '未知'}`;
+        }
+        
+        output.innerHTML = html;
+      } catch (e) {
+        output.innerHTML = `<span class="cmd">$ ${cmd}</span>\n\n<span class="error">❌ 网络错误: ${e.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

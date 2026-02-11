@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>简单测试</title>
+</head>
+<body style="background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px;">
+  <h2>🧪 简单命令测试</h2>
+  
+  <button onclick="test1()" style="padding: 10px 20px; margin: 5px;">测试 1: whoami</button>
+  <button onclick="test2()" style="padding: 10px 20px; margin: 5px;">测试 2: pwd</button>
+  <button onclick="test3()" style="padding: 10px 20px; margin: 5px;">测试 3: echo hello</button>
+  <button onclick="test4()" style="padding: 10px 20px; margin: 5px;">测试 4: mkdir testfolder</button>
+  
+  <pre id="output" style="background: #0d0d0d; padding: 15px; margin-top: 20px; border-radius: 5px;"></pre>
+  
+  <script>
+    async function test1() {
+      show('执行: whoami');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'whoami'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function test2() {
+      show('执行: pwd');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'pwd'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function test3() {
+      show('执行: echo hello world');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'echo hello world'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function test4() {
+      show('执行: mkdir testfolder123');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'mkdir testfolder123'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    function show(msg) {
+      document.getElementById('output').textContent = msg + '\n\n执行中...';
+    }
+    
+    function showResult(data) {
+      let text = '';
+      if (data.parsedCommand) {
+        text += '解析命令: ' + data.parsedCommand + '\n';
+      }
+      text += '成功: ' + (data.success ? '是' : '否') + '\n';
+      if (data.success) {
+        text += '输出: ' + (data.output || '(空)');
+      } else {
+        text += '错误: ' + (data.error || '未知');
+      }
+      document.getElementById('output').textContent = text;
+    }
+  </script>
+</body>
+</html>

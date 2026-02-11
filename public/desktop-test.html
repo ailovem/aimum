@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>测试桌面创建</title>
+</head>
+<body style="background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px;">
+  <h2>🖥️ 桌面文件测试</h2>
+  
+  <button onclick="getDesktop()" style="padding: 10px 20px; margin: 5px;">1. 获取桌面路径</button>
+  <button onclick="createOnDesktop()" style="padding: 10px 20px; margin: 5px;">2. 创建文件到桌面</button>
+  <button onclick="listDesktop()" style="padding: 10px 20px; margin: 5px;">3. 查看桌面文件</button>
+  <button onclick="deleteTestFile()" style="padding: 10px 20px; margin: 5px;">4. 删除测试文件</button>
+  
+  <pre id="output" style="background: #0d0d0d; padding: 15px; margin-top: 20px; border-radius: 5px; white-space: pre-wrap;"></pre>
+  
+  <script>
+    async function getDesktop() {
+      show('获取桌面路径...');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'echo %USERPROFILE%\\Desktop'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function createOnDesktop() {
+      show('在桌面创建测试文件...');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'echo 这是一个测试文件 > %USERPROFILE%\\Desktop\\小白熊测试.txt'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function listDesktop() {
+      show('查看桌面文件...');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'dir %USERPROFILE%\\Desktop'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    async function deleteTestFile() {
+      show('删除测试文件...');
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({command: 'del /q "%USERPROFILE%\\Desktop\\小白熊测试.txt"'})
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (e) {
+        show('错误: ' + e.message);
+      }
+    }
+    
+    function show(msg) {
+      document.getElementById('output').textContent = msg + '\n\n执行中...';
+    }
+    
+    function showResult(data) {
+      let text = '';
+      if (data.success) {
+        text += '✅ 成功!\n';
+        text += '输出: ' + (data.output || '(空)');
+      } else {
+        text += '❌ 失败\n';
+        text += '错误: ' + (data.error || '未知');
+      }
+      document.getElementById('output').textContent = text;
+    }
+  </script>
+</body>
+</html>
