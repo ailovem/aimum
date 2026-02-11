@@ -28,18 +28,18 @@ const PROGRESS = {
   phase1: {
     name: 'Phase 1: MVP',
     total: 60,
-    completed: 26,
+    completed: 58,
     tasks: [
       { name: '产品需求文档', hours: 4, status: 'done', pr: null },
       { name: '技术架构设计', hours: 4, status: 'done', pr: null },
-      { name: '项目初始化', hours: 2, status: 'in_progress', pr: null },
-      { name: '用户系统开发', hours: 8, status: 'todo', pr: null },
-      { name: 'AI 对话核心', hours: 8, status: 'todo', pr: null },
-      { name: '令牌系统', hours: 4, status: 'todo', pr: null },
-      { name: '插件市场', hours: 6, status: 'todo', pr: null },
-      { name: '前端 UI 开发', hours: 12, status: 'todo', pr: null },
-      { name: 'PWA 配置', hours: 2, status: 'todo', pr: null },
-      { name: '部署配置', hours: 2, status: 'todo', pr: null },
+      { name: '项目初始化', hours: 2, status: 'done', pr: null },
+      { name: '用户系统开发', hours: 8, status: 'done', pr: null },
+      { name: 'AI 对话核心', hours: 8, status: 'done', pr: null },
+      { name: '令牌系统', hours: 4, status: 'done', pr: null },
+      { name: '插件市场', hours: 6, status: 'done', pr: null },
+      { name: '前端 UI 开发', hours: 12, status: 'done', pr: null },
+      { name: 'PWA 配置', hours: 2, status: 'in_progress', pr: null },
+      { name: '部署配置', hours: 2, status: 'in_progress', pr: null },
       { name: '单元测试', hours: 4, status: 'todo', pr: null },
       { name: '文档编写', hours: 4, status: 'todo', pr: null }
     ]
