@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 合作 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #6366f1;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* 两栏布局 */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    
+    /* 我的 API */
+    .my-api-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .api-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .api-item {
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .api-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .api-icon.wechat { background: linear-gradient(135deg, #07c160, #06ae56); }
+    .api-icon.dingtalk { background: linear-gradient(135deg, #2a78f4, #1e5ac8); }
+    .api-icon.slack { background: linear-gradient(135deg, #4a154b, #3b1139); }
+    .api-icon.feishu { background: linear-gradient(135deg, #00c7be, #00a89c); }
+    .api-icon.github { background: linear-gradient(135deg, #333, #24292e); }
+    .api-icon.openai { background: linear-gradient(135deg, #10a37f, #0d8a6a); }
+    
+    .api-info {
+      flex: 1;
+    }
+    
+    .api-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .api-status {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    
+    .status-dot.connected { background: var(--success); }
+    .status-dot.disconnected { background: var(--danger); }
+    
+    .api-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .api-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .api-btn:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .api-btn.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    
+    /* 添加新 API */
+    .add-api-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .add-api-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .add-api-card {
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .add-api-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .add-api-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .add-api-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    /* 连接表单 */
+    .connect-form {
+      display: none;
+      background: var(--bg-card-hover);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    
+    .connect-form.show {
+      display: block;
+    }
+    
+    .form-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .connect-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .connect-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* API 文档 */
+    .docs-section {
+      margin-top: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-card-hover);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    
+    .doc-icon {
+      font-size: 20px;
+    }
+    
+    .doc-info {
+      flex: 1;
+    }
+    
+    .doc-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .doc-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    
+    /* 弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 500px;
+      width: 90%;
+      padding: 24px;
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-card-hover);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    
+    /* 空状态 */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+    }
+    
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    
+    .empty-text {
+      font-size: 13px;
+    }
+    
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .add-api-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1 class="title">🔗 API 合作</h1>
+      <div></div>
+    </header>
+    
+    <div class="main-layout">
+      <!-- 左侧：已连接的 API -->
+      <div class="my-api-section">
+        <div class="section-title">
+          <span>🔌</span> 已连接的 API
+        </div>
+        <div class="api-list" id="connectedList">
+          <div class="api-item">
+            <div class="api-icon wechat">💬</div>
+            <div class="api-info">
+              <div class="api-name">微信</div>
+              <div class="api-status">
+                <span class="status-dot connected"></span>
+                已连接 · 最后使用 2分钟前
+              </div>
+            </div>
+            <div class="api-actions">
+              <button class="api-btn" onclick="testApi('wechat')">测试</button>
+              <button class="api-btn danger" onclick="disconnectApi('wechat')">断开</button>
+            </div>
+          </div>
+          
+          <div class="api-item">
+            <div class="api-icon openai">🤖</div>
+            <div class="api-info">
+              <div class="api-name">OpenAI</div>
+              <div class="api-status">
+                <span class="status-dot connected"></span>
+                已连接 · GPT-4 模型
+              </div>
+            </div>
+            <div class="api-actions">
+              <button class="api-btn" onclick="testApi('openai')">测试</button>
+              <button class="api-btn danger" onclick="disconnectApi('openai')">断开</button>
+            </div>
+          </div>
+          
+          <div class="api-item">
+            <div class="api-icon feishu">📱</div>
+            <div class="api-info">
+              <div class="api-name">飞书</div>
+              <div class="api-status">
+                <span class="status-dot connected"></span>
+                已连接 · Webhook 已配置
+              </div>
+            </div>
+            <div class="api-actions">
+              <button class="api-btn" onclick="testApi('feishu')">测试</button>
+              <button class="api-btn danger" onclick="disconnectApi('feishu')">断开</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty" id="emptyState" style="display: none;">
+          <div class="empty-icon">🔌</div>
+          <div class="empty-text">还没有连接任何 API<br>添加一个开始对接外部服务</div>
+        </div>
+      </div>
+      
+      <!-- 右侧：添加新 API -->
+      <div class="add-api-section">
+        <div class="section-title">
+          <span>➕</span> 添加新的 API
+        </div>
+        
+        <div class="add-api-grid">
+          <div class="add-api-card" onclick="showConnectForm('slack')">
+            <div class="add-api-icon">💬</div>
+            <div class="add-api-name">Slack</div>
+          </div>
+          <div class="add-api-card" onclick="showConnectForm('github')">
+            <div class="add-api-icon">🐙</div>
+            <div class="add-api-name">GitHub</div>
+          </div>
+          <div class="add-api-card" onclick="showConnectForm('notion')">
+            <div class="add-api-icon">📝</div>
+            <div class="add-api-name">Notion</div>
+          </div>
+          <div class="add-api-card" onclick="showConnectForm('dropbox')">
+            <div class="add-api-icon">📦</div>
+            <div class="add-api-name">Dropbox</div>
+          </div>
+          <div class="add-api-card" onclick="showConnectForm('stripe')">
+            <div class="add-api-icon">💳</div>
+            <div class="add-api-name">Stripe</div>
+          </div>
+          <div class="add-api-card" onclick="showConnectForm('custom')">
+            <div class="add-api-icon">⚙️</div>
+            <div class="add-api-name">自定义 API</div>
+          </div>
+        </div>
+        
+        <!-- 连接表单 -->
+        <div class="connect-form" id="connectForm">
+          <div class="form-title">
+            <span id="formIcon">🔗</span>
+            <span id="formName">连接 API</span>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">API Key / App ID</label>
+            <input type="text" class="form-input" id="apiKey" placeholder="输入你的 API Key">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">API Secret / App Secret</label>
+            <input type="password" class="form-input" id="apiSecret" placeholder="输入 API Secret">
+          </div>
+          
+          <div class="form-group" id="endpointGroup">
+            <label class="form-label">接口地址 (Endpoint)</label>
+            <input type="text" class="form-input" id="apiEndpoint" placeholder="https://api.example.com">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">备注名称</label>
+              <input type="text" class="form-input" id="apiName" placeholder="给这个连接起个名字">
+            </div>
+          </div>
+          
+          <button class="connect-btn" onclick="connectApi()">
+            🔗 连接 API
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- API 文档 -->
+    <div class="docs-section">
+      <div class="section-title">
+        <span>📚</span> API 文档和教程
+      </div>
+      
+      <div class="doc-item" onclick="openDoc('wechat')">
+        <span class="doc-icon">📖</span>
+        <div class="doc-info">
+          <div class="doc-name">微信 API 对接指南</div>
+          <div class="doc-desc">企业微信/个人微信 API 配置说明</div>
+        </div>
+        <span>→</span>
+      </div>
+      
+      <div class="doc-item" onclick="openDoc('webhook')">
+        <span class="doc-icon">🔔</span>
+        <div class="doc-info">
+          <div class="doc-name">Webhook 配置</div>
+          <div class="doc-desc">接收外部事件推送的配置方法</div>
+        </div>
+        <span>→</span>
+      </div>
+      
+      <div class="doc-item" onclick="openDoc('custom')">
+        <span class="doc-icon">⚙️</span>
+        <div class="doc-info">
+          <div class="doc-name">自定义 API 开发</div>
+          <div class="doc-desc">如何为 AImum 开发自定义 API 插件</div>
+        </div>
+        <span>→</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 测试弹窗 -->
+  <div class="modal" id="testModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="testModalTitle">API 测试</div>
+        <button class="modal-close" onclick="closeTestModal()">×</button>
+      </div>
+      <div id="testResult"></div>
+    </div>
+  </div>
+  
+  <script>
+    let connectedApis = ['wechat', 'openai', 'feishu'];
+    let currentApi = null;
+    
+    function showConnectForm(type) {
+      const form = document.getElementById('connectForm');
+      const icons = {
+        slack: '💬', github: '🐙', notion: '📝', 
+        dropbox: '📦', stripe: '💳', custom: '⚙️'
+      };
+      const names = {
+        slack: 'Slack', github: 'GitHub', notion: 'Notion',
+        dropbox: 'Dropbox', stripe: 'Stripe', custom: '自定义 API'
+      };
+      
+      document.getElementById('formIcon').textContent = icons[type] || '🔗';
+      document.getElementById('formName').textContent = '连接 ' + (names[type] || 'API');
+      document.getElementById('formIcon').textContent = icons[type] || '⚙️';
+      
+      const endpointGroup = document.getElementById('endpointGroup');
+      if (type === 'custom') {
+        endpointGroup.style.display = 'block';
+      } else {
+        endpointGroup.style.display = 'none';
+      }
+      
+      form.classList.add('show');
+      currentApi = type;
+      
+      // 清空表单
+      document.getElementById('apiKey').value = '';
+      document.getElementById('apiSecret').value = '';
+      document.getElementById('apiEndpoint').value = '';
+      document.getElementById('apiName').value = '';
+    }
+    
+    function connectApi() {
+      const key = document.getElementById('apiKey').value.trim();
+      const secret = document.getElementById('apiSecret').value.trim();
+      const name = document.getElementById('apiName').value.trim() || currentApi;
+      
+      if (!key || !secret) {
+        alert('请填写 API Key 和 API Secret！');
+        return;
+      }
+      
+      // 模拟连接
+      const btn = document.querySelector('.connect-btn');
+      btn.textContent = '连接中...';
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        if (!connectedApis.includes(currentApi)) {
+          connectedApis.push(currentApi);
+        }
+        
+        btn.textContent = '🔗 连接 API';
+        btn.disabled = false;
+        
+        document.getElementById('connectForm').classList.remove('show');
+        alert(`✅ ${name} 连接成功！`);
+        refreshApiList();
+      }, 1500);
+    }
+    
+    function refreshApiList() {
+      const list = document.getElementById('connectedList');
+      const empty = document.getElementById('emptyState');
+      
+      if (connectedApis.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      
+      list.style.display = 'flex';
+      empty.style.display = 'none';
+    }
+    
+    function testApi(type) {
+      const names = {
+        wechat: '微信', openai: 'OpenAI', feishu: '飞书',
+        slack: 'Slack', github: 'GitHub', notion: 'Notion'
+      };
+      
+      document.getElementById('testModalTitle').textContent = '测试 ' + (names[type] || type);
+      
+      document.getElementById('testResult').innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🔄</div>
+          <div>正在测试连接...</div>
+        </div>
+      `;
+      
+      document.getElementById('testModal').classList.add('show');
+      
+      setTimeout(() => {
+        document.getElementById('testResult').innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">连接成功！</div>
+            <div style="font-size: 13px; color: var(--text-dim);">
+              响应时间: 127ms<br>
+              状态: 正常
+            </div>
+          </div>
+        `;
+      }, 1000);
+    }
+    
+    function closeTestModal() {
+      document.getElementById('testModal').classList.remove('show');
+    }
+    
+    function disconnectApi(type) {
+      const names = {
+        wechat: '微信', openai: 'OpenAI', feishu: '飞书'
+      };
+      
+      if (confirm(`确定要断开 ${names[type] || type} 连接吗？`)) {
+        connectedApis = connectedApis.filter(t => t !== type);
+        refreshApiList();
+        alert('已断开连接');
+      }
+    }
+    
+    function openDoc(type) {
+      const docs = {
+        wechat: '微信 API 对接文档',
+        webhook: 'Webhook 配置文档',
+        custom: '自定义 API 开发文档'
+      };
+      alert(`📖 正在打开: ${docs[type]}\n\n(这是演示文档)`);
+    }
+  </script>
+</body>
+</html>
