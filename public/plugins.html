@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - 插件市场</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --card-hover: #252542;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .subtitle {
+      color: var(--text-dim);
+    }
+    
+    /* 标签页 */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab:hover {
+      background: var(--card-hover);
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    /* 搜索栏 */
+    .search-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 14px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 15px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+    
+    .sort-select {
+      padding: 14px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    /* 分类标签 */
+    .categories {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .category {
+      padding: 10px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .category:hover {
+      border-color: var(--primary);
+    }
+    
+    .category.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    /* 插件网格 */
+    .plugins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    .plugin-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    
+    .plugin-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+    
+    .plugin-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .plugin-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    
+    .plugin-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .plugin-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .plugin-author {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    .plugin-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .plugin-badge.builtin {
+      background: rgba(102, 126, 234, 0.2);
+      color: var(--primary);
+    }
+    
+    .plugin-badge.paid {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+    
+    .plugin-description {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .plugin-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    
+    .plugin-tag {
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .plugin-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .plugin-price {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .plugin-price.free {
+      color: var(--success);
+    }
+    
+    .plugin-action {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .plugin-action.install {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .plugin-action.install:hover {
+      background: #5a67d8;
+    }
+    
+    .plugin-action.uninstall {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+    
+    .plugin-action.uninstall:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+    
+    .plugin-action.enabled {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    
+    .plugin-action.disabled {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-dim);
+    }
+    
+    /* 已安装标签页 */
+    .installed-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    .installed-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid var(--border);
+    }
+    
+    .installed-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .installed-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .installed-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .installed-status {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .status-dot.enabled {
+      background: var(--success);
+    }
+    
+    .status-dot.disabled {
+      background: var(--text-dim);
+    }
+    
+    .installed-toggle {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .installed-toggle:hover {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .search-bar {
+        flex-direction: column;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        padding-bottom: 10px;
+      }
+      
+      .plugin-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🦁 插件市场</h1>
+      <p class="subtitle">扩展 AImum 的能力，让 AI 更强大</p>
+    </header>
+    
+    <!-- 标签页 -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('explore')">
+        🔍 探索插件
+      </button>
+      <button class="tab" onclick="switchTab('installed')">
+        📦 已安装
+      </button>
+    </div>
+    
+    <!-- 探索插件 -->
+    <div id="exploreTab">
+      <!-- 搜索栏 -->
+      <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" 
+               placeholder="搜索插件..." onkeyup="handleSearch(event)">
+        <select class="sort-select" id="sortSelect" onchange="handleSort()">
+          <option value="popular">🔥 热门</option>
+          <option value="newest">🆕 最新</option>
+          <option value="price">💰 价格</option>
+        </select>
+      </div>
+      
+      <!-- 分类 -->
+      <div class="categories" id="categories">
+        <!-- 分类会动态加载 -->
+      </div>
+      
+      <!-- 插件列表 -->
+      <div class="plugins-grid" id="pluginsGrid">
+        <!-- 插件会动态加载 -->
+      </div>
+    </div>
+    
+    <!-- 已安装 -->
+    <div id="installedTab" style="display: none;">
+      <div class="installed-grid" id="installedGrid">
+        <!-- 已安装插件会动态加载 -->
+      </div>
+      
+      <div class="empty-state" id="emptyInstalled" style="display: none;">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">暂无已安装插件</div>
+        <p>去探索插件市场安装更多插件吧！</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const API_BASE = '/api/plugins';
+    let currentTab = 'explore';
+    let currentCategory = 'all';
+    let currentSort = 'popular';
+    let searchKeyword = '';
+    let installedPlugins = new Map();
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCategories();
+      loadPlugins();
+      loadInstalled();
+    });
+    
+    // 切换标签页
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab')[tab === 'explore' ? 0 : 1].classList.add('active');
+      
+      document.getElementById('exploreTab').style.display = tab === 'explore' ? 'block' : 'none';
+      document.getElementById('installedTab').style.display = tab === 'installed' ? 'block' : 'none';
+    }
+    
+    // 加载分类
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/categories`);
+        const data = await res.json();
+        
+        if (data.success) {
+          const container = document.getElementById('categories');
+          container.innerHTML = data.data.categories.map(cat => `
+            <div class="category ${cat.id === currentCategory ? 'active' : ''}" 
+                 onclick="selectCategory('${cat.id}')">
+              ${cat.icon} ${cat.name} (${cat.count})
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('加载分类失败:', error);
+      }
+    }
+    
+    // 选择分类
+    function selectCategory(category) {
+      currentCategory = category;
+      
+      document.querySelectorAll('.category').forEach(cat => {
+        cat.classList.toggle('active', cat.textContent.includes(category) || 
+          (category === 'all' && cat.textContent.includes('全部')));
+      });
+      
+      loadPlugins();
+    }
+    
+    // 处理搜索
+    function handleSearch(event) {
+      searchKeyword = event.target.value;
+      loadPlugins();
+    }
+    
+    // 处理排序
+    function handleSort() {
+      currentSort = document.getElementById('sortSelect').value;
+      loadPlugins();
+    }
+    
+    // 加载插件列表
+    async function loadPlugins() {
+      try {
+        let url = `${API_BASE}/plugins?category=${currentCategory}&sort=${currentSort}`;
+        if (searchKeyword) {
+          url += `&search=${encodeURIComponent(searchKeyword)}`;
+        }
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.success) {
+          renderPlugins(data.data.plugins);
+        }
+      } catch (error) {
+        console.error('加载插件失败:', error);
+      }
+    }
+    
+    // 渲染插件
+    function renderPlugins(plugins) {
+      const grid = document.getElementById('pluginsGrid');
+      
+      if (plugins.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">未找到插件</div>
+            <p>试试其他关键词或分类</p>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = plugins.map(plugin => `
+        <div class="plugin-card">
+          <div class="plugin-header">
+            <div class="plugin-icon">${plugin.icon}</div>
+            <div class="plugin-info">
+              <div class="plugin-name">
+                ${plugin.name}
+                ${plugin.builtin ? '<span class="plugin-badge builtin">内置</span>' : ''}
+                ${plugin.price > 0 ? '<span class="plugin-badge paid">付费</span>' : ''}
+              </div>
+              <div class="plugin-author">by ${plugin.author}</div>
+            </div>
+          </div>
+          
+          <div class="plugin-description">${plugin.description}</div>
+          
+          <div class="plugin-tags">
+            ${plugin.tags.map(tag => `<span class="plugin-tag">${tag}</span>`).join('')}
+          </div>
+          
+          <div class="plugin-footer">
+            <div class="plugin-price ${plugin.price === 0 ? 'free' : ''}">
+              ${plugin.price === 0 ? '免费' : `${plugin.price} tokens/次`}
+            </div>
+            <button class="plugin-action ${installedPlugins.has(plugin.id) ? 'uninstall' : 'install'}"
+                    onclick="${installedPlugins.has(plugin.id) ? `uninstallPlugin('${plugin.id}')` : `installPlugin('${plugin.id}')`}">
+              ${installedPlugins.has(plugin.id) ? '卸载' : '安装'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 加载已安装插件
+    async function loadInstalled() {
+      try {
+        const res = await fetch(`${API_BASE}/installed`);
+        const data = await res.json();
+        
+        if (data.success) {
+          installedPlugins.clear();
+          data.data.plugins.forEach(p => {
+            installedPlugins.set(p.id, p);
+          });
+          
+          renderInstalled(data.data.plugins);
+        }
+      } catch (error) {
+        console.error('加载已安装插件失败:', error);
+      }
+    }
+    
+    // 渲染已安装插件
+    function renderInstalled(plugins) {
+      const grid = document.getElementById('installedGrid');
+      const empty = document.getElementById('emptyInstalled');
+      
+      if (plugins.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      
+      grid.innerHTML = plugins.map(plugin => `
+        <div class="installed-card">
+          <div class="installed-icon">${plugin.icon}</div>
+          <div class="installed-info">
+            <div class="installed-name">${plugin.name}</div>
+            <div class="installed-status">
+              <span class="status-dot ${plugin.enabled ? 'enabled' : 'disabled'}"></span>
+              ${plugin.enabled ? '已启用' : '已禁用'}
+            </div>
+          </div>
+          <button class="installed-toggle" onclick="togglePlugin('${plugin.id}', ${!plugin.enabled})">
+            ${plugin.enabled ? '禁用' : '启用'}
+          </button>
+        </div>
+      `).join('');
+    }
+    
+    // 安装插件
+    async function installPlugin(pluginId) {
+      try {
+        const res = await fetch(`${API_BASE}/install`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pluginId })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('插件安装成功！');
+          loadInstalled();
+          loadPlugins();
+        } else {
+          alert(data.error || '安装失败');
+        }
+      } catch (error) {
+        console.error('安装失败:', error);
+        alert('安装失败，请重试');
+      }
+    }
+    
+    // 卸载插件
+    async function uninstallPlugin(pluginId) {
+      if (!confirm('确定要卸载这个插件吗？')) return;
+      
+      try {
+        const res = await fetch(`${API_BASE}/uninstall`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pluginId })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('插件卸载成功！');
+          loadInstalled();
+          loadPlugins();
+        } else {
+          alert(data.error || '卸载失败');
+        }
+      } catch (error) {
+        console.error('卸载失败:', error);
+        alert('卸载失败，请重试');
+      }
+    }
+    
+    // 切换插件状态
+    async function togglePlugin(pluginId, enabled) {
+      try {
+        const res = await fetch(`${API_BASE}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pluginId, enabled })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          loadInstalled();
+        } else {
+          alert(data.error || '操作失败');
+        }
+      } catch (error) {
+        console.error('操作失败:', error);
+      }
+    }
+  </script>
+</body>
+</html>
