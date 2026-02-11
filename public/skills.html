@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>现有技能 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #6366f1;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .back-btn:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* 分类筛选 */
+    .categories {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .cat-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .cat-btn:hover, .cat-btn.active {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--primary);
+      color: var(--text);
+    }
+    
+    /* 技能网格 */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .skill-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .skill-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    
+    .skill-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .skill-info {
+      flex: 1;
+    }
+    
+    .skill-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .skill-category {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .skill-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .skill-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .skill-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .skill-use {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .skill-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .skill-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    /* 技能详情弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-card-hover);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-section {
+      margin-bottom: 20px;
+    }
+    
+    .modal-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .modal-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-dim);
+    }
+    
+    .modal-section-content {
+      background: var(--bg-card-hover);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    
+    .param-item {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .param-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .param-name {
+      width: 100px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    
+    .param-value {
+      flex: 1;
+      font-size: 13px;
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .modal-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .modal-btn.secondary {
+      background: var(--bg-card-hover);
+      color: var(--text);
+    }
+    
+    /* 搜索 */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1 class="title">🤖 现有技能</h1>
+      <div></div>
+    </header>
+    
+    <div class="search-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="搜索技能..." onkeyup="filterSkills()">
+    </div>
+    
+    <div class="categories" id="categories">
+      <button class="cat-btn active" onclick="filterByCategory('all', this)">全部 (12)</button>
+      <button class="cat-btn" onclick="filterByCategory('tool', this)">工具 (5)</button>
+      <button class="cat-btn" onclick="filterByCategory('communication', this)">沟通 (3)</button>
+      <button class="cat-btn" onclick="filterByCategory('analysis', this)">分析 (2)</button>
+      <button class="cat-btn" onclick="filterByCategory('automation', this)">自动化 (2)</button>
+    </div>
+    
+    <div class="skills-grid" id="skillsGrid"></div>
+  </div>
+  
+  <!-- 技能详情弹窗 -->
+  <div class="modal" id="skillModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">技能详情</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeModal()">取消</button>
+        <button class="modal-btn primary" id="useSkillBtn" onclick="useSkill()">使用技能</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const skills = [
+      {
+        id: 'file-organize',
+        name: '文件整理',
+        icon: '📁',
+        category: 'tool',
+        categoryName: '工具',
+        desc: '自动扫描、分类、整理文件和文件夹，支持按类型、日期、大小等多种规则',
+        usageCount: 156,
+        rating: 4.8,
+        params: [
+          { name: '扫描路径', type: 'string', required: true, default: '桌面' },
+          { name: '分类规则', type: 'select', options: ['类型', '日期', '大小', '自定义'] },
+          { name: '目标文件夹', type: 'string', required: false }
+        ],
+        examples: [
+          '整理桌面文件',
+          '按类型分类下载文件夹',
+          '移动旧文件到归档文件夹'
+        ]
+      },
+      {
+        id: 'email-compose',
+        name: '邮件撰写',
+        icon: '✉️',
+        category: 'communication',
+        categoryName: '沟通',
+        desc: '智能撰写专业邮件，支持多种场景：商务、跟进、感谢、邀请等',
+        usageCount: 234,
+        rating: 4.9,
+        params: [
+          { name: '收件人', type: 'string', required: true },
+          { name: '邮件主题', type: 'string', required: true },
+          { name: '邮件类型', type: 'select', options: ['商务', '跟进', '感谢', '邀请', '其他'] },
+          { name: '关键要点', type: 'text', required: false }
+        ],
+        examples: [
+          '给客户发商务合作邮件',
+          '写跟进邮件给项目经理',
+          '发送会议邀请'
+        ]
+      },
+      {
+        id: 'data-analyze',
+        name: '数据分析',
+        icon: '📊',
+        category: 'analysis',
+        categoryName: '分析',
+        desc: '深入分析数据，生成可视化报告，支持 Excel、CSV 等格式',
+        usageCount: 89,
+        rating: 4.7,
+        params: [
+          { name: '数据来源', type: 'string', required: true },
+          { name: '分析类型', type: 'select', options: ['趋势', '对比', '分布', '预测'] },
+          { name: '输出格式', type: 'select', options: ['图表', '报告', '两者'] }
+        ],
+        examples: [
+          '分析本月销售数据',
+          '对比Q1和Q2业绩',
+          '预测下季度趋势'
+        ]
+      },
+      {
+        id: 'web-search',
+        name: '网页搜索',
+        icon: '🔍',
+        category: 'tool',
+        categoryName: '工具',
+        desc: '快速搜索网页信息，支持多引擎切换，智能筛选结果',
+        usageCount: 312,
+        rating: 4.6,
+        params: [
+          { name: '搜索关键词', type: 'string', required: true },
+          { name: '搜索引擎', type: 'select', options: ['Google', 'Bing', '百度'] },
+          { name: '结果数量', type: 'number', default: 10 }
+        ],
+        examples: [
+          '搜索 AI 最新新闻',
+          '查找技术解决方案',
+          '获取市场调研信息'
+        ]
+      },
+      {
+        id: 'code-review',
+        name: '代码审查',
+        icon: '👨‍💻',
+        category: 'tool',
+        categoryName: '工具',
+        desc: '自动审查代码，发现潜在问题，提供优化建议',
+        usageCount: 67,
+        rating: 4.5,
+        params: [
+          { name: '代码语言', type: 'select', options: ['JavaScript', 'Python', 'Java', '其他'] },
+          { name: '审查重点', type: 'text', required: false }
+        ],
+        examples: [
+          '审查 JavaScript 代码',
+          '检查 Python 脚本',
+          '优化代码性能'
+        ]
+      },
+      {
+        id: 'meeting-notes',
+        name: '会议纪要',
+        icon: '📝',
+        category: 'communication',
+        categoryName: '沟通',
+        desc: '自动生成结构化会议纪要，提取关键决策和待办事项',
+        usageCount: 145,
+        rating: 4.8,
+        params: [
+          { name: '会议主题', type: 'string', required: true },
+          { name: '参与人员', type: 'text', required: false },
+          { name: '会议时长', type: 'number', required: false }
+        ],
+        examples: [
+          '生成项目周会纪要',
+          '整理客户沟通记录',
+          '记录团队讨论要点'
+        ]
+      },
+      {
+        id: 'image-generate',
+        name: '图片生成',
+        icon: '🎨',
+        category: 'tool',
+        categoryName: '工具',
+        desc: '基于描述生成图片，支持多种风格：写实、卡通、插画等',
+        usageCount: 423,
+        rating: 4.7,
+        params: [
+          { name: '图片描述', type: 'text', required: true },
+          { name: '图片风格', type: 'select', options: ['写实', '卡通', '插画', '极简'] },
+          { name: '图片尺寸', type: 'select', options: ['1:1', '16:9', '9:16', '4:3'] }
+        ],
+        examples: [
+          '生成产品宣传图',
+          '创建社交媒体配图',
+          '设计 Logo 草图'
+        ]
+      },
+      {
+        id: 'schedule-manage',
+        name: '日程管理',
+        icon: '📅',
+        category: 'automation',
+        categoryName: '自动化',
+        desc: '智能安排日程，自动优化时间分配，避免冲突',
+        usageCount: 178,
+        rating: 4.6,
+        params: [
+          { name: '待办事项', type: 'text', required: true },
+          { name: '可用时间段', type: 'text', required: true },
+          { name: '优先级', type: 'select', options: ['高', '中', '低'] }
+        ],
+        examples: [
+          '安排明天工作日程',
+          '优化本周时间表',
+          '规划项目里程碑'
+        ]
+      },
+      {
+        id: 'text-summary',
+        name: '文本摘要',
+        icon: '📋',
+        category: 'analysis',
+        categoryName: '分析',
+        desc: '快速提取长文本要点，生成简洁摘要',
+        usageCount: 267,
+        rating: 4.9,
+        params: [
+          { name: '原文内容', type: 'text', required: true },
+          { name: '摘要长度', type: 'select', options: ['简短', '中等', '详细'] },
+          { name: '输出语言', type: 'select', options: ['中文', '英文', '双语'] }
+        ],
+        examples: [
+          '总结这篇论文要点',
+          '提取文章关键信息',
+          '生成文档摘要'
+        ]
+      },
+      {
+        id: 'document-translate',
+        name: '文档翻译',
+        icon: '🌐',
+        category: 'communication',
+        categoryName: '沟通',
+        desc: '专业文档翻译，保持格式和术语一致性',
+        usageCount: 189,
+        rating: 4.7,
+        params: [
+          { name: '原文内容', type: 'text', required: true },
+          { name: '目标语言', type: 'select', options: ['中文', '英文', '日文', '韩文', '法文'] },
+          { name: '专业术语', type: 'text', required: false }
+        ],
+        examples: [
+          '翻译产品说明书',
+          '本地化网站内容',
+          '翻译技术文档'
+        ]
+      },
+      {
+        id: 'auto-report',
+        name: '自动报告',
+        icon: '📈',
+        category: 'automation',
+        categoryName: '自动化',
+        desc: '自动汇总数据，生成周期性报告邮件',
+        usageCount: 92,
+        rating: 4.5,
+        params: [
+          { name: '报告类型', type: 'select', options: ['日报', '周报', '月报', '季报'] },
+          { name: '数据范围', type: 'string', required: true },
+          { name: '收件人', type: 'string', required: false }
+        ],
+        examples: [
+          '生成本周工作报告',
+          '汇总月度销售数据',
+          '制作季度总结报告'
+        ]
+      },
+      {
+        id: 'file-convert',
+        name: '格式转换',
+        icon: '🔄',
+        category: 'tool',
+        categoryName: '工具',
+        desc: '支持 100+ 种文件格式互转，保持内容完整',
+        usageCount: 445,
+        rating: 4.8,
+        params: [
+          { name: '源文件', type: 'file', required: true },
+          { name: '目标格式', type: 'select', options: ['PDF', 'Word', 'Excel', 'PPT'] }
+        ],
+        examples: [
+          'PDF 转 Word',
+          '图片转 PDF',
+          'Excel 转 CSV'
+        ]
+      }
+    ];
+    
+    let currentCategory = 'all';
+    let currentSkill = null;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSkills(skills);
+    });
+    
+    function renderSkills(list) {
+      const grid = document.getElementById('skillsGrid');
+      
+      grid.innerHTML = list.map(skill => `
+        <div class="skill-card" onclick="showSkillDetail('${skill.id}')">
+          <div class="skill-header">
+            <div class="skill-icon">${skill.icon}</div>
+            <div class="skill-info">
+              <div class="skill-name">${skill.name}</div>
+              <div class="skill-category">${skill.categoryName}</div>
+            </div>
+          </div>
+          <div class="skill-desc">${skill.desc}</div>
+          <div class="skill-footer">
+            <div class="skill-stats">
+              <span class="skill-use">📦 ${skill.usageCount}</span>
+              <span class="skill-rating">⭐ ${skill.rating}</span>
+            </div>
+            <button class="skill-btn">查看详情</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function filterByCategory(category, btn) {
+      currentCategory = category;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const filtered = category === 'all' 
+        ? skills 
+        : skills.filter(s => s.category === category);
+      
+      renderSkills(filtered);
+    }
+    
+    function filterSkills() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = skills.filter(s => 
+        s.name.toLowerCase().includes(query) || 
+        s.desc.toLowerCase().includes(query)
+      );
+      renderSkills(filtered);
+    }
+    
+    function showSkillDetail(id) {
+      const skill = skills.find(s => s.id === id);
+      if (!skill) return;
+      
+      currentSkill = skill;
+      
+      document.getElementById('modalTitle').innerHTML = `${skill.icon} ${skill.name}`;
+      
+      document.getElementById('modalBody').innerHTML = `
+        <div class="modal-section">
+          <div class="modal-section-title">技能介绍</div>
+          <div class="modal-section-content">${skill.desc}</div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">使用示例</div>
+          <div class="modal-section-content">
+            ${skill.examples.map(ex => `• ${ex}`).join('<br>')}
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">参数配置</div>
+          <div class="modal-section-content">
+            ${skill.params.map(p => `
+              <div class="param-item">
+                <span class="param-name">${p.name}${p.required ? ' *' : ''}</span>
+                <span class="param-value">
+                  ${p.type === 'select' ? p.options.join(' / ') : p.type}
+                  ${p.default ? ` (默认: ${p.default})` : ''}
+                </span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">使用统计</div>
+          <div class="modal-section-content">
+            已使用 ${skill.usageCount} 次 · 评分 ${skill.rating} ⭐
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('useSkillBtn').onclick = () => useSkillInChat(skill);
+      
+      document.getElementById('skillModal').classList.add('show');
+    }
+    
+    function closeModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+    
+    function useSkill() {
+      if (currentSkill) {
+        alert(`已选择技能: ${currentSkill.name}\n\n点击确定跳转到对话页面使用`);
+        closeModal();
+        location.href = 'core.html';
+      }
+    }
+    
+    function useSkillInChat(skill) {
+      localStorage.setItem('selectedSkill', JSON.stringify(skill));
+      closeModal();
+      location.href = 'core.html';
+    }
+    
+    // 点击弹窗外部关闭
+    document.getElementById('skillModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('skillModal')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
