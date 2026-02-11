@@ -120,6 +120,11 @@
       background: var(--card-hover);
     }
     
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    
     .search-input {
       flex: 1;
       min-width: 200px;
@@ -192,13 +197,6 @@
       margin-bottom: 12px;
     }
     
-    .workflow-meta {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-    
     .workflow-badge {
       display: inline-block;
       padding: 4px 10px;
@@ -223,6 +221,8 @@
       margin-top: 16px;
       padding-top: 16px;
       border-top: 1px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
     }
     
     .step-preview {
@@ -231,20 +231,19 @@
     }
     
     .step-dot {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       background: var(--card-hover);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      margin-right: 8px;
+      font-size: 14px;
     }
     
     .step-arrow {
       color: var(--text-dim);
-      margin: 0 8px;
+      margin: 0 4px;
     }
     
     /* 模板区域 */
@@ -429,7 +428,7 @@
     
     <!-- 工具栏 -->
     <div class="toolbar">
-      <input type="text" class="search-input" placeholder="搜索工作流..." onkeyup="searchWorkflows(event)">
+      <input type="text" class="search-input" placeholder="搜索工作流..." id="searchInput" onkeyup="searchWorkflows(event)">
       <button class="btn btn-primary" onclick="showCreateModal()">
         ➕ 创建工作流
       </button>
@@ -460,17 +459,122 @@
   </div>
   
   <script>
-    const API_BASE = '/api/workflow';
+    // 模拟数据 - 用于静态测试
+    const MOCK_TEMPLATES = [
+      {
+        id: 'content-publishing',
+        name: '内容发布流程',
+        description: '自动化的内容创作到发布流程',
+        icon: '📝',
+        category: 'productivity',
+        steps: [
+          { id: 's1', type: 'ai-chat', name: 'AI 创作' },
+          { id: 's2', type: 'approval', name: '人工审核' },
+          { id: 's3', type: 'ai-chat', name: '格式优化' },
+          { id: 's4', type: 'webhook', name: '发布' }
+        ],
+        triggers: ['manual', 'schedule'],
+        enabled: true
+      },
+      {
+        id: 'lead-followup',
+        name: '线索跟进',
+        description: '自动化线索评分和跟进提醒',
+        icon: '🎯',
+        category: 'sales',
+        steps: [
+          { id: 's1', type: 'ai-analysis', name: '线索评分' },
+          { id: 's2', type: 'condition', name: '评分判断' },
+          { id: 's3', type: 'notification', name: '高优先级跟进' },
+          { id: 's4', type: 'notification', name: '常规跟进' }
+        ],
+        triggers: ['new-lead'],
+        enabled: true
+      },
+      {
+        id: 'daily-report',
+        name: '日报汇总',
+        description: '自动汇总每日数据并发送报告',
+        icon: '📊',
+        category: 'productivity',
+        steps: [
+          { id: 's1', type: 'data-fetch', name: '收集数据' },
+          { id: 's2', type: 'ai-chat', name: '生成报告' },
+          { id: 's3', type: 'notification', name: '发送报告' }
+        ],
+        triggers: ['schedule'],
+        enabled: true
+      }
+    ];
+    
+    const MOCK_WORKFLOWS = [
+      {
+        workflowId: 'wf_demo_1',
+        name: '我的内容发布流程',
+        description: '基于模板创建的工作流',
+        icon: '📝',
+        category: 'productivity',
+        steps: MOCK_TEMPLATES[0].steps,
+        enabled: true,
+        createdAt: Date.now() - 86400000
+      },
+      {
+        workflowId: 'wf_demo_2',
+        name: '线索自动跟进',
+        description: '销售线索自动处理',
+        icon: '🎯',
+        category: 'sales',
+        steps: MOCK_TEMPLATES[1].steps,
+        enabled: true,
+        createdAt: Date.now() - 172800000
+      }
+    ];
+    
+    const MOCK_EXECUTIONS = [
+      {
+        executionId: 'exec_1',
+        workflowName: '我的内容发布流程',
+        status: 'completed',
+        createdAt: Date.now() - 3600000,
+        duration: 125
+      },
+      {
+        executionId: 'exec_2',
+        workflowName: '线索自动跟进',
+        status: 'running',
+        createdAt: Date.now() - 60000,
+        duration: 0
+      },
+      {
+        executionId: 'exec_3',
+        workflowName: '日报汇总',
+        status: 'completed',
+        createdAt: Date.now() - 86400000,
+        duration: 89
+      }
+    ];
+    
+    const STEP_ICONS = {
+      'ai-chat': '🤖',
+      'ai-analysis': '📈',
+      'approval': '✅',
+      'condition': '🔀',
+      'notification': '📱',
+      'webhook': '🔗',
+      'data-fetch': '📥',
+      'delay': '⏰'
+    };
+    
     let currentTab = 'workflows';
-    let workflows = [];
-    let templates = [];
-    let executions = [];
+    let workflows = [...MOCK_WORKFLOWS];
+    let templates = [...MOCK_TEMPLATES];
+    let executions = [...MOCK_EXECUTIONS];
     
     // 初始化
     document.addEventListener('DOMContentLoaded', () => {
-      loadTemplates();
-      loadWorkflows();
-      loadExecutions();
+      renderTemplates();
+      renderWorkflows();
+      renderExecutions();
     });
     
     // 切换标签页
@@ -484,25 +588,6 @@
       document.getElementById('templatesSection').style.display = tab === 'templates' ? 'block' : 'none';
       document.getElementById('workflowsGrid').style.display = tab === 'workflows' ? 'grid' : 'none';
       document.getElementById('executionsList').style.display = tab === 'executions' ? 'flex' : 'none';
-      
-      if (tab === 'executions') {
-        loadExecutions();
-      }
-    }
-    
-    // 加载模板
-    async function loadTemplates() {
-      try {
-        const res = await fetch(`${API_BASE}/templates`);
-        const data = await res.json();
-        
-        if (data.success) {
-          templates = data.data.templates;
-          renderTemplates();
-        }
-      } catch (error) {
-        console.error('加载模板失败:', error);
-      }
     }
     
     // 渲染模板
@@ -519,47 +604,25 @@
     }
     
     // 从模板创建
-    async function createFromTemplate(templateId) {
-      try {
-        const res = await fetch(`${API_BASE}/from-template`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ templateId })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          alert('✅ 工作流创建成功！');
-          loadWorkflows();
-          switchTab('workflows');
-        } else {
-          alert('创建失败: ' + data.error);
-        }
-      } catch (error) {
-        console.error('创建失败:', error);
-        alert('创建失败，请重试');
-      }
-    }
-    
-    // 加载工作流
-    async function loadWorkflows(search = '') {
-      try {
-        let url = `${API_BASE}/workflows`;
-        if (search) {
-          url += `?search=${encodeURIComponent(search)}`;
-        }
-        
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.success) {
-          workflows = data.data.workflows;
-          renderWorkflows();
-        }
-      } catch (error) {
-        console.error('加载工作流失败:', error);
-      }
+    function createFromTemplate(templateId) {
+      const template = templates.find(t => t.id === templateId);
+      if (!template) return;
+      
+      const newWorkflow = {
+        workflowId: 'wf_' + Date.now(),
+        name: template.name,
+        description: template.description,
+        icon: template.icon,
+        category: template.category,
+        steps: template.steps.map(s => ({ ...s })),
+        enabled: true,
+        createdAt: Date.now()
+      };
+      
+      workflows.unshift(newWorkflow);
+      renderWorkflows();
+      switchTab('workflows');
+      alert('✅ 工作流创建成功！\n\n点击 "▶️ 执行" 按钮测试运行！');
     }
     
     // 渲染工作流
@@ -578,7 +641,7 @@
       }
       
       grid.innerHTML = workflows.map(workflow => `
-        <div class="workflow-card" onclick="openWorkflow('${workflow.workflowId}')">
+        <div class="workflow-card">
           <div class="workflow-header">
             <div class="workflow-icon">${workflow.icon || '📋'}</div>
             <div class="workflow-info">
@@ -594,9 +657,15 @@
             <span>🏷️ ${workflow.category || '自定义'}</span>
           </div>
           <div class="workflow-steps">
-            <div class="step-preview">
-              ${renderStepPreview(workflow.steps)}
-            </div>
+            ${renderStepPreview(workflow.steps)}
+          </div>
+          <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <button class="btn btn-success" onclick="executeWorkflow('${workflow.workflowId}')" style="flex:1">
+              ▶️ 执行
+            </button>
+            <button class="btn btn-secondary" onclick="viewWorkflow('${workflow.workflowId}')">
+              👁️ 查看
+            </button>
           </div>
         </div>
       `).join('');
@@ -606,51 +675,64 @@
     function renderStepPreview(steps) {
       if (!steps || steps.length === 0) return '<span style="color: var(--text-dim)">无步骤</span>';
       
-      const icons = {
-        'ai-chat': '🤖',
-        'ai-analysis': '📈',
-        'approval': '✅',
-        'condition': '🔀',
-        'notification': '📱',
-        'webhook': '🔗',
-        'data-fetch': '📥',
-        'delay': '⏰'
-      };
-      
-      return steps.slice(0, 3).map((step, i) => `
-        <div class="step-dot">${icons[step.type] || '📋'}</div>
-        ${i < Math.min(2, steps.length - 1) ? '<span class="step-arrow">→</span>' : ''}
-      `).join('') + (steps.length > 3 ? '<span class="step-dot" style="background: var(--card-hover)">+' + (steps.length - 3) + '</span>' : '');
+      return steps.map((step, i) => `
+        <div class="step-dot">${STEP_ICONS[step.type] || '📋'}</div>
+        ${i < steps.length - 1 ? '<span class="step-arrow">→</span>' : ''}
+      `).join('') + `<span style="margin-left: 8px; color: var(--text-dim); font-size: 12px;">${steps.length} 步</span>`;
     }
     
     // 搜索工作流
     function searchWorkflows(event) {
-      loadWorkflows(event.target.value);
-    }
-    
-    // 打开工作流详情
-    function openWorkflow(workflowId) {
-      window.location.href = `/workflow.html?id=${workflowId}`;
-    }
-    
-    // 显示创建模态框
-    function showCreateModal() {
-      alert('创建工作流功能开发中...\n\n可以使用模板快速创建工作流！');
-    }
-    
-    // 加载执行历史
-    async function loadExecutions() {
-      try {
-        const res = await fetch(`${API_BASE}/executions`);
-        const data = await res.json();
-        
-        if (data.success) {
-          executions = data.data.executions;
-          renderExecutions();
-        }
-      } catch (error) {
-        console.error('加载执行历史失败:', error);
+      const query = event.target.value.toLowerCase();
+      
+      if (!query) {
+        workflows = [...MOCK_WORKFLOWS];
+      } else {
+        workflows = MOCK_WORKFLOWS.filter(w => 
+          w.name.toLowerCase().includes(query) ||
+          w.description?.toLowerCase().includes(query)
+        );
       }
+      
+      renderWorkflows();
+    }
+    
+    // 执行工作流
+    function executeWorkflow(workflowId) {
+      const workflow = workflows.find(w => w.workflowId === workflowId);
+      if (!workflow) return;
+      
+      const exec = {
+        executionId: 'exec_' + Date.now(),
+        workflowName: workflow.name,
+        status: 'running',
+        createdAt: Date.now(),
+        duration: 0
+      };
+      
+      executions.unshift(exec);
+      renderExecutions();
+      switchTab('executions');
+      
+      alert(`🚀 开始执行: ${workflow.name}\n\n状态: 运行中...\n\n(模拟执行，3秒后完成)`);
+      
+      // 模拟执行完成
+      setTimeout(() => {
+        exec.status = 'completed';
+        exec.duration = Math.floor((Date.now() - exec.createdAt) / 1000);
+        renderExecutions();
+        alert(`✅ 执行完成!\n\n工作流: ${workflow.name}\n耗时: ${exec.duration}秒\n\n(这是模拟测试)`);
+      }, 3000);
+    }
+    
+    // 查看工作流
+    function viewWorkflow(workflowId) {
+      const workflow = workflows.find(w => w.workflowId === workflowId);
+      if (!workflow) return;
+      
+      const stepsText = workflow.steps.map((s, i) => `${i+1}. ${STEP_ICONS[s.type] || '📋'} ${s.name}`).join('\n');
+      
+      alert(`📋 ${workflow.name}\n\n${workflow.description}\n\n📝 步骤:\n${stepsText}\n\n状态: ${workflow.enabled ? '已启用' : '已禁用'}`);
     }
     
     // 渲染执行历史
@@ -677,6 +759,7 @@
             <div class="execution-name">${exec.workflowName}</div>
             <div class="execution-meta">
               开始时间: ${new Date(exec.createdAt).toLocaleString()}
+              ${exec.duration ? ` | 耗时: ${exec.duration}秒` : ''}
             </div>
           </div>
           <span class="execution-status ${exec.status}">
@@ -686,11 +769,16 @@
       `).join('');
     }
     
+    // 显示创建模态框
+    function showCreateModal() {
+      alert('🛠️ 创建工作流功能\n\n建议使用模板快速创建：\n\n1. 在"模板库"选择一个模板\n2. 点击模板即可创建工作流\n3. 然后点击"执行"测试');
+    }
+    
     // 刷新数据
     function refreshData() {
-      loadTemplates();
-      loadWorkflows();
-      loadExecutions();
+      workflows = [...MOCK_WORKFLOWS];
+      renderWorkflows();
+      renderExecutions();
       alert('✅ 数据已刷新！');
     }
   </script>

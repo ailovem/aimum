@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - 微信集成</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #07c160;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --card-hover: #252542;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .subtitle {
+      color: var(--text-dim);
+    }
+    
+    /* 状态卡片 */
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .status-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    
+    .status-card.connected {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .status-card.disconnected {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .status-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    
+    .status-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .status-label {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    
+    /* 配置区域 */
+    .config-section {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    .config-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .config-label {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .config-input {
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .config-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .config-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #06ad56;
+    }
+    
+    .btn-secondary {
+      background: var(--card-hover);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: #2d2d50;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    
+    /* 消息历史 */
+    .messages-section {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 30px;
+    }
+    
+    .messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .message-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .message-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), #06ad56);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .message-content {
+      flex: 1;
+    }
+    
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .message-user {
+      font-weight: 600;
+    }
+    
+    .message-time {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .message-type {
+      padding: 4px 8px;
+      background: var(--card-hover);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    
+    .message-text {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    /* 响应配置 */
+    .response-config {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .response-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .response-item {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .response-item:hover {
+      border-color: var(--primary);
+    }
+    
+    .response-item.active {
+      border-color: var(--primary);
+      background: rgba(7, 193, 96, 0.1);
+    }
+    
+    .response-icon {
+      font-size: 24px;
+    }
+    
+    .response-info {
+      flex: 1;
+    }
+    
+    .response-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .response-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    /* 模拟数据切换 */
+    .demo-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .demo-toggle:hover {
+      border-color: var(--primary);
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+    
+    @media (max-width: 768px) {
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>💬 微信集成</h1>
+      <p class="subtitle">连接微信，开启 AI 对话</p>
+    </header>
+    
+    <!-- 状态卡片 -->
+    <div class="status-cards">
+      <div class="status-card" id="connectionStatus">
+        <div class="status-icon">🔗</div>
+        <div class="status-value" id="connectionValue">未配置</div>
+        <div class="status-label">连接状态</div>
+      </div>
+      <div class="status-card">
+        <div class="status-icon">💬</div>
+        <div class="status-value" id="messageCount">0</div>
+        <div class="status-label">消息总数</div>
+      </div>
+      <div class="status-card">
+        <div class="status-icon">👥</div>
+        <div class="status-value" id="userCount">0</div>
+        <div class="status-label">关注用户</div>
+      </div>
+      <div class="status-card">
+        <div class="status-icon">🔄</div>
+        <div class="status-value" id="autoReplyRate">0%</div>
+        <div class="status-label">自动回复率</div>
+      </div>
+    </div>
+    
+    <!-- 配置区域 -->
+    <div class="config-section">
+      <h2 class="section-title">⚙️ 公众号配置</h2>
+      
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="config-label">AppID</label>
+          <input type="text" class="config-input" id="appId" placeholder="微信 AppID">
+        </div>
+        <div class="config-item">
+          <label class="config-label">AppSecret</label>
+          <input type="password" class="config-input" id="appSecret" placeholder="微信 AppSecret">
+        </div>
+        <div class="config-item">
+          <label class="config-label">Token</label>
+          <input type="text" class="config-input" id="token" placeholder="Token (用于验证)">
+        </div>
+        <div class="config-item">
+          <label class="config-label">EncodingAESKey (可选)</label>
+          <input type="text" class="config-input" id="aesKey" placeholder="消息加解密密钥">
+        </div>
+      </div>
+      
+      <div class="config-item" style="margin-top: 20px;">
+        <label class="config-label">Webhook URL</label>
+        <input type="text" class="config-input" id="webhookUrl" placeholder="https://your-domain.com/api/wechat" readonly>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-primary" onclick="saveConfig()">
+          💾 保存配置
+        </button>
+        <button class="btn btn-secondary" onclick="testConnection()">
+          🧪 测试连接
+        </button>
+        <button class="btn btn-secondary" onclick="verifyUrl()">
+          🔗 验证 URL
+        </button>
+      </div>
+    </div>
+    
+    <!-- 自动回复配置 -->
+    <div class="config-section">
+      <h2 class="section-title">🤖 自动回复配置</h2>
+      
+      <div class="response-grid">
+        <div class="response-item active" onclick="toggleResponse(this, 'text')">
+          <div class="response-icon">💬</div>
+          <div class="response-info">
+            <div class="response-name">文本回复</div>
+            <div class="response-desc">自动回复文本消息</div>
+          </div>
+        </div>
+        <div class="response-item active" onclick="toggleResponse(this, 'image')">
+          <div class="response-icon">🖼️</div>
+          <div class="response-info">
+            <div class="response-name">图片回复</div>
+            <div class="response-desc">支持图片消息</div>
+          </div>
+        </div>
+        <div class="response-item active" onclick="toggleResponse(this, 'news')">
+          <div class="response-icon">📰</div>
+          <div class="response-info">
+            <div class="response-name">图文回复</div>
+            <div class="response-desc">发送图文消息</div>
+          </div>
+        </div>
+        <div class="response-item" onclick="toggleResponse(this, 'menu')">
+          <div class="response-icon">📋</div>
+          <div class="response-info">
+            <div class="response-name">自定义菜单</div>
+            <div class="response-desc">配置自定义菜单</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="config-item" style="margin-top: 24px;">
+        <label class="config-label">默认回复消息</label>
+        <textarea class="config-input config-textarea" id="defaultReply" placeholder="当 AI 无法处理时的默认回复">您好！我是 AImum 助手。
+
+发送 "/help" 查看帮助
+发送 "/status" 查看系统状态
+发送 "/progress" 查看开发进度
+
+期待为您提供服务！</textarea>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-primary" onclick="saveReplyConfig()">
+          💾 保存回复配置
+        </button>
+      </div>
+    </div>
+    
+    <!-- 消息历史 -->
+    <div class="messages-section">
+      <h2 class="section-title">📨 消息历史</h2>
+      
+      <div class="messages-list" id="messagesList">
+        <div class="empty-state">
+          <div class="empty-icon">💬</div>
+          <div class="empty-title">暂无消息</div>
+          <p>配置完成后，用户的微信消息将显示在这里</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 模拟数据切换 -->
+  <div class="demo-toggle" onclick="toggleDemoMode()">
+    <div class="status-dot" id="demoDot"></div>
+    <span id="demoStatus">模拟数据: 开启</span>
+  </div>
+  
+  <script>
+    // 模拟数据
+    const DEMO_MESSAGES = [
+      {
+        id: 1,
+        user: '用户_A1B2C3',
+        type: 'text',
+        content: '你好！这个是什么产品？',
+        time: Date.now() - 300000,
+        reply: '您好！AImum 是一人公司 AI 操作系统...'
+      },
+      {
+        id: 2,
+        user: '用户_D4E5F6',
+        type: 'text',
+        content: '/help',
+        time: Date.now() - 600000,
+        reply: '/help - 显示帮助...'
+      },
+      {
+        id: 3,
+        user: '用户_G7H8I9',
+        type: 'image',
+        content: '[图片消息]',
+        time: Date.now() - 900000,
+        reply: '收到图片消息！'
+      },
+      {
+        id: 4,
+        user: '用户_J0K1L2',
+        type: 'text',
+        content: '怎么使用？',
+        time: Date.now() - 1200000,
+        reply: '您可以直接发送消息与我对话...'
+      },
+      {
+        id: 5,
+        user: '用户_M3N4O5',
+        type: 'subscribe',
+        content: '[关注公众号]',
+        time: Date.now() - 1800000,
+        reply: '欢迎关注！发送 /help 查看帮助'
+      }
+    ];
+    
+    const DEMO_CONFIG = {
+      appId: 'wx1234567890abcdef',
+      appSecret: '****************',
+      token: 'aimum2024',
+      aesKey: '',
+      defaultReply: '您好！我是 AImum 助手。\n\n发送 "/help" 查看帮助',
+      responses: {
+        text: true,
+        image: true,
+        news: true,
+        menu: false
+      }
+    };
+    
+    let demoMode = true;
+    let messages = [...DEMO_MESSAGES];
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+      renderMessages();
+      updateStats();
+      generateWebhookUrl();
+    });
+    
+    // 加载配置
+    function loadConfig() {
+      const saved = localStorage.getItem('wechat_config');
+      if (saved) {
+        const config = JSON.parse(saved);
+        document.getElementById('appId').value = config.appId || '';
+        document.getElementById('appSecret').value = config.appSecret || '';
+        document.getElementById('token').value = config.token || '';
+        document.getElementById('aesKey').value = config.aesKey || '';
+        document.getElementById('defaultReply').value = config.defaultReply || '';
+      } else if (demoMode) {
+        // 使用演示配置
+        document.getElementById('appId').value = DEMO_CONFIG.appId;
+        document.getElementById('token').value = DEMO_CONFIG.token;
+        document.getElementById('defaultReply').value = DEMO_CONFIG.defaultReply;
+      }
+    }
+    
+    // 保存配置
+    function saveConfig() {
+      const config = {
+        appId: document.getElementById('appId').value,
+        appSecret: document.getElementById('appSecret').value,
+        token: document.getElementById('token').value,
+        aesKey: document.getElementById('aesKey').value,
+        defaultReply: document.getElementById('defaultReply').value
+      };
+      
+      localStorage.setItem('wechat_config', JSON.stringify(config));
+      alert('✅ 配置已保存！\n\n提示：演示模式下，所有数据都是模拟的。');
+    }
+    
+    // 测试连接
+    function testConnection() {
+      const appId = document.getElementById('appId').value;
+      const token = document.getElementById('token').value;
+      
+      if (!appId || !token) {
+        alert('⚠️ 请先填写 AppID 和 Token');
+        return;
+      }
+      
+      if (demoMode) {
+        alert('🧪 **连接测试 (模拟)**\n\nAppID: ' + appId + '\nToken: ' + token + '\n\n✅ 模拟连接成功！\n\n(实际使用需要配置真实的公众号)');
+      } else {
+        alert('🔄 正在测试连接...\n\n(需要真实配置才能测试)');
+      }
+    }
+    
+    // 验证 URL
+    function verifyUrl() {
+      alert('🔗 **URL 验证说明**\n\n1. 在微信公众平台配置服务器\n2. 将以下 URL 设置为回调地址:\n\n`https://your-domain.com/api/wechat`\n\n3. 验证时会自动完成\n\n提示: 开发环境可使用 ngrok 内网穿透');
+    }
+    
+    // 生成 Webhook URL
+    function generateWebhookUrl() {
+      const baseUrl = window.location.origin;
+      document.getElementById('webhookUrl').value = baseUrl + '/api/wechat';
+    }
+    
+    // 切换回复类型
+    function toggleResponse(element, type) {
+      element.classList.toggle('active');
+    }
+    
+    // 保存回复配置
+    function saveReplyConfig() {
+      alert('✅ 回复配置已保存！');
+    }
+    
+    // 渲染消息列表
+    function renderMessages() {
+      const list = document.getElementById('messagesList');
+      
+      if (messages.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-title">暂无消息</div>
+            <p>配置完成后，用户的微信消息将显示在这里</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const typeIcons = {
+        'text': '💬',
+        'image': '🖼️',
+        'voice': '🎤',
+        'subscribe': '👋',
+        'unsubscribe': '👋'
+      };
+      
+      const typeNames = {
+        'text': '文本',
+        'image': '图片',
+        'voice': '语音',
+        'subscribe': '关注',
+        'unsubscribe': '取消关注'
+      };
+      
+      list.innerHTML = messages.map(msg => `
+        <div class="message-item">
+          <div class="message-avatar">${typeIcons[msg.type] || '💬'}</div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-user">${msg.user}</span>
+              <span class="message-time">${formatTime(msg.time)}</span>
+              <span class="message-type">${typeNames[msg.type] || msg.type}</span>
+            </div>
+            <div class="message-text">${msg.content}</div>
+            ${msg.reply ? `<div class="message-text" style="color: var(--success); margin-top: 8px;">✅ 已回复: ${msg.reply}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 格式化时间
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+      return date.toLocaleDateString();
+    }
+    
+    // 更新统计
+    function updateStats() {
+      document.getElementById('messageCount').textContent = messages.length;
+      
+      const uniqueUsers = new Set(messages.map(m => m.user));
+      document.getElementById('userCount').textContent = uniqueUsers.size;
+      
+      const repliedCount = messages.filter(m => m.reply).length;
+      const rate = messages.length > 0 ? Math.round((repliedCount / messages.length) * 100) : 0;
+      document.getElementById('autoReplyRate').textContent = rate + '%';
+      
+      const statusCard = document.getElementById('connectionStatus');
+      if (demoMode || document.getElementById('appId').value) {
+        statusCard.className = 'status-card connected';
+        document.getElementById('connectionValue').textContent = demoMode ? '演示' : '已配置';
+      } else {
+        statusCard.className = 'status-card disconnected';
+        document.getElementById('connectionValue').textContent = '未配置';
+      }
+    }
+    
+    // 切换演示模式
+    function toggleDemoMode() {
+      demoMode = !demoMode;
+      
+      document.getElementById('demoDot').style.background = demoMode ? 'var(--success)' : 'var(--danger)';
+      document.getElementById('demoStatus').textContent = '模拟数据: ' + (demoMode ? '开启' : '关闭');
+      
+      if (demoMode) {
+        messages = [...DEMO_MESSAGES];
+      } else {
+        messages = [];
+      }
+      
+      renderMessages();
+      updateStats();
+      alert('已' + (demoMode ? '开启' : '关闭') + '模拟数据模式');
+    }
+    
+    // 添加新消息（用于测试）
+    function addTestMessage() {
+      const testMessages = [
+        '测试消息1',
+        '/help',
+        '怎么使用？',
+        '这个产品多少钱？',
+        '我想了解更多'
+      ];
+      
+      const newMsg = {
+        id: Date.now(),
+        user: '测试用户_' + Math.random().toString(36).substr(2, 6),
+        type: 'text',
+        content: testMessages[Math.floor(Math.random() * testMessages.length)],
+        time: Date.now(),
+        reply: '模拟回复内容...'
+      };
+      
+      messages.unshift(newMsg);
+      renderMessages();
+      updateStats();
+    }
+  </script>
+</body>
+</html>
