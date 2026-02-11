@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>技能市场 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #6366f1;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* 搜索栏 */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    /* 分类标签 */
+    .categories {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .cat-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .cat-btn:hover, .cat-btn.active {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--primary);
+      color: var(--text);
+    }
+    
+    /* 技能卡片网格 */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .skill-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .skill-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .skill-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .skill-info {
+      flex: 1;
+    }
+    
+    .skill-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .skill-author {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .skill-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    
+    .skill-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .skill-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .skill-price {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .skill-price.free {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+    
+    .skill-price.paid {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    
+    .install-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.2s;
+    }
+    
+    .install-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    }
+    
+    .install-btn.installed {
+      background: var(--bg-card-hover);
+      color: var(--success);
+    }
+    
+    /* 弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .modal-title {
+      flex: 1;
+    }
+    
+    .modal-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .modal-author {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-card-hover);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-section {
+      margin-bottom: 20px;
+    }
+    
+    .modal-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .modal-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-dim);
+    }
+    
+    .modal-section-content {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg-card-hover);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .feature-icon {
+      font-size: 16px;
+    }
+    
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .tag {
+      padding: 4px 10px;
+      background: var(--bg-card-hover);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg-card-hover);
+      border-radius: 10px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .modal-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .modal-btn.secondary {
+      background: var(--bg-card-hover);
+      color: var(--text);
+    }
+    
+    /* 空状态 */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-text {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1 class="title">🛒 技能市场</h1>
+      <div></div>
+    </header>
+    
+    <!-- 搜索 -->
+    <div class="search-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索技能..." onkeyup="filterSkills()">
+    </div>
+    
+    <!-- 分类 -->
+    <div class="categories" id="categories">
+      <button class="cat-btn active" onclick="filterByCategory('all', this)">全部</button>
+      <button class="cat-btn" onclick="filterByCategory('tool', this)">🛠️ 工具</button>
+      <button class="cat-btn" onclick="filterByCategory('communication', this)">💬 沟通</button>
+      <button class="cat-btn" onclick="filterByCategory('analysis', this)">📊 分析</button>
+      <button class="cat-btn" onclick="filterByCategory('automation', this)">🔄 自动化</button>
+      <button class="cat-btn" onclick="filterByCategory('social', this)">🌐 社交</button>
+    </div>
+    
+    <!-- 技能列表 -->
+    <div class="skills-grid" id="skillsGrid"></div>
+  </div>
+  
+  <!-- 技能详情弹窗 -->
+  <div class="modal" id="skillModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon">📦</div>
+        <div class="modal-title">
+          <div class="modal-name" id="modalName">技能名称</div>
+          <div class="modal-author" id="modalAuthor">作者</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <div class="modal-section-title">技能介绍</div>
+          <div class="modal-section-content" id="modalDesc">描述</div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">功能特点</div>
+          <div id="modalFeatures"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">标签</div>
+          <div class="tag-list" id="modalTags"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">安装数据</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="modalInstalls">0</div>
+              <div class="stat-label">安装次数</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="modalRating">0</div>
+              <div class="stat-label">评分</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="modalVersion">v1.0</div>
+              <div class="stat-label">版本</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeModal()">取消</button>
+        <button class="modal-btn primary" id="modalActionBtn" onclick="installSkill()">安装</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const marketSkills = [
+      {
+        id: 'pdf-convert',
+        name: 'PDF转换器',
+        icon: '📄',
+        category: 'tool',
+        author: 'AImum官方',
+        desc: '支持PDF与Word、Excel、图片等多种格式互转，保持原有格式不变',
+        features: ['PDF转Word', 'PDF转Excel', '批量转换', '云端处理'],
+        tags: ['PDF', '格式转换', '办公'],
+        installs: 12543,
+        rating: 4.9,
+        price: 'free',
+        version: 'v2.1'
+      },
+      {
+        id: 'image-bg-remove',
+        name: '智能抠图',
+        icon: '🖼️',
+        category: 'tool',
+        author: 'AI Studio',
+        desc: '一键去除图片背景，支持批量处理，精准识别主体边缘',
+        features: ['一键抠图', '批量处理', '毛发级精度', '透明背景'],
+        tags: ['抠图', '图片处理', '设计'],
+        installs: 8932,
+        rating: 4.8,
+        price: 'free',
+        version: 'v1.5'
+      },
+      {
+        id: 'video-subtitle',
+        name: '字幕提取',
+        icon: '🎬',
+        category: 'tool',
+        author: 'MediaTool',
+        desc: '从视频中提取字幕，支持多语言，自动翻译成中文',
+        features: ['字幕提取', '多语言支持', '自动翻译', 'SRT导出'],
+        tags: ['视频', '字幕', '翻译'],
+        installs: 5621,
+        rating: 4.6,
+        price: 'paid',
+        version: 'v1.2'
+      },
+      {
+        id: 'voice-transcribe',
+        name: '语音转文字',
+        icon: '🎤',
+        category: 'communication',
+        author: 'AImum官方',
+        desc: '支持多种语言语音转文字，准确率高，适合会议记录',
+        features: ['实时转写', '多语言', '会议纪要', '语气词过滤'],
+        tags: ['语音', '转写', '会议'],
+        installs: 23456,
+        rating: 4.9,
+        price: 'free',
+        version: 'v3.0'
+      },
+      {
+        id: 'social-post',
+        name: '小红书文案',
+        icon: '📕',
+        category: 'social',
+        author: 'ContentPro',
+        desc: '生成适合小红书风格的种草文案，配图建议和标签推荐',
+        features: ['种草文案', '爆款标题', '标签推荐', '配图建议'],
+        tags: ['小红书', '文案', '种草'],
+        installs: 15678,
+        rating: 4.7,
+        price: 'free',
+        version: 'v1.8'
+      },
+      {
+        id: 'tiktok-edit',
+        name: '抖音脚本',
+        icon: '🎵',
+        category: 'social',
+        author: 'VideoMaster',
+        desc: '生成抖音短视频脚本，包含开头黄金3秒、剧情反转、结尾引导',
+        features: ['黄金开头', '剧情模板', '热门BGM', '带货脚本'],
+        tags: ['抖音', '短视频', '脚本'],
+        installs: 19876,
+        rating: 4.8,
+        price: 'free',
+        version: 'v2.0'
+      },
+      {
+        id: 'seo优化',
+        name: 'SEO文章',
+        icon: '🔍',
+        category: 'analysis',
+        author: 'WebPro',
+        desc: '生成符合SEO优化规则的文章，提升搜索引擎排名',
+        features: ['关键词优化', '标题优化', '内容结构', '内链建议'],
+        tags: ['SEO', '文章', '优化'],
+        installs: 7832,
+        rating: 4.5,
+        price: 'paid',
+        version: 'v1.3'
+      },
+      {
+        id: 'auto-email',
+        name: '自动回邮件',
+        icon: '📧',
+        category: 'automation',
+        author: 'ProductivityHub',
+        desc: '根据邮件内容自动生成回复草稿，支持智能分类和优先级排序',
+        features: ['智能回复', '邮件分类', '优先级', '定时发送'],
+        tags: ['邮件', '自动化', '效率'],
+        installs: 11234,
+        rating: 4.6,
+        price: 'free',
+        version: 'v2.3'
+      },
+      {
+        id: 'data-visual',
+        name: '图表生成',
+        icon: '📈',
+        category: 'analysis',
+        author: 'DataViz',
+        desc: '将数据自动转换成可视化图表，支持多种图表类型',
+        features: ['柱状图', '折线图', '饼图', '动态图表'],
+        tags: ['图表', '数据', '可视化'],
+        installs: 9876,
+        rating: 4.7,
+        price: 'free',
+        version: 'v1.9'
+      },
+      {
+        id: 'calendar-auto',
+        name: '智能日程',
+        icon: '📅',
+        category: 'automation',
+        author: 'LifeOrganizer',
+        desc: '根据任务自动安排日程，优化时间分配，避免冲突',
+        features: ['自动排程', '时间优化', '冲突检测', '提醒通知'],
+        tags: ['日程', '时间管理', '提醒'],
+        installs: 14567,
+        rating: 4.8,
+        price: 'free',
+        version: 'v2.5'
+      }
+    ];
+    
+    let installedSkills = [];
+    let currentCategory = 'all';
+    let currentSkill = null;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      loadInstalled();
+      renderSkills(marketSkills);
+    });
+    
+    function loadInstalled() {
+      const saved = localStorage.getItem('installed_skills');
+      if (saved) {
+        installedSkills = JSON.parse(saved);
+      }
+    }
+    
+    function renderSkills(list) {
+      const grid = document.getElementById('skillsGrid');
+      
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="empty" style="grid-column: 1/-1;">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-text">没有找到相关技能</div>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = list.map(skill => `
+        <div class="skill-card" onclick="showSkillDetail('${skill.id}')">
+          <div class="skill-header">
+            <div class="skill-icon">${skill.icon}</div>
+            <div class="skill-info">
+              <div class="skill-name">${skill.name}</div>
+              <div class="skill-author">${skill.author}</div>
+            </div>
+          </div>
+          <div class="skill-desc">${skill.desc}</div>
+          <div class="skill-footer">
+            <div class="skill-stats">
+              <span>📦 ${formatNumber(skill.installs)}</span>
+              <span>⭐ ${skill.rating}</span>
+            </div>
+            <span class="skill-price ${skill.price}">${skill.price === 'free' ? '免费' : '付费'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function formatNumber(num) {
+      if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+      return num;
+    }
+    
+    function filterByCategory(category, btn) {
+      currentCategory = category;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const filtered = category === 'all' 
+        ? marketSkills 
+        : marketSkills.filter(s => s.category === category);
+      
+      renderSkills(filtered);
+    }
+    
+    function filterSkills() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      
+      let filtered = currentCategory === 'all' 
+        ? marketSkills 
+        : marketSkills.filter(s => s.category === currentCategory);
+      
+      if (query) {
+        filtered = filtered.filter(s => 
+          s.name.toLowerCase().includes(query) || 
+          s.desc.toLowerCase().includes(query) ||
+          s.tags.some(t => t.toLowerCase().includes(query))
+        );
+      }
+      
+      renderSkills(filtered);
+    }
+    
+    function showSkillDetail(id) {
+      const skill = marketSkills.find(s => s.id === id);
+      if (!skill) return;
+      
+      currentSkill = skill;
+      const isInstalled = installedSkills.includes(id);
+      
+      document.getElementById('modalIcon').textContent = skill.icon;
+      document.getElementById('modalName').textContent = skill.name;
+      document.getElementById('modalAuthor').textContent = 'by ' + skill.author;
+      document.getElementById('modalDesc').textContent = skill.desc;
+      document.getElementById('modalFeatures').innerHTML = skill.features.map(f => `
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>${f}</span>
+        </div>
+      `).join('');
+      document.getElementById('modalTags').innerHTML = skill.tags.map(t => `
+        <span class="tag">${t}</span>
+      `).join('');
+      document.getElementById('modalInstalls').textContent = formatNumber(skill.installs);
+      document.getElementById('modalRating').textContent = skill.rating;
+      document.getElementById('modalVersion').textContent = skill.version;
+      
+      const btn = document.getElementById('modalActionBtn');
+      if (isInstalled) {
+        btn.textContent = '✓ 已安装';
+        btn.classList.add('installed');
+      } else {
+        btn.textContent = skill.price === 'free' ? '免费安装' : '¥9.9 购买';
+        btn.classList.remove('installed');
+      }
+      
+      document.getElementById('skillModal').classList.add('show');
+    }
+    
+    function closeModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+    
+    function installSkill() {
+      if (!currentSkill) return;
+      
+      if (installedSkills.includes(currentSkill.id)) {
+        alert('该技能已经安装过了！');
+        return;
+      }
+      
+      // 模拟安装
+      const btn = document.getElementById('modalActionBtn');
+      btn.textContent = '安装中...';
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        installedSkills.push(currentSkill.id);
+        localStorage.setItem('installed_skills', JSON.stringify(installedSkills));
+        
+        btn.textContent = '✓ 已安装';
+        btn.classList.add('installed');
+        btn.disabled = false;
+        
+        alert(`✅ ${currentSkill.name} 安装成功！\n\n现在你可以在"现有技能"中使用它了。`);
+        closeModal();
+      }, 1500);
+    }
+    
+    // 点击弹窗外部关闭
+    document.getElementById('skillModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('skillModal')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
