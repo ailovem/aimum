@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务分解 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #6366f1;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    h1 { font-size: 20px; font-weight: 600; }
+    
+    /* 任务输入区 */
+    .task-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .task-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .task-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .execute-btn {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .execute-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .execute-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* 快捷任务 */
+    .quick-tasks {
+      margin-top: 16px;
+    }
+    
+    .quick-title {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+    
+    .quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .quick-btn {
+      padding: 8px 16px;
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    
+    .quick-btn:hover {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+    
+    /* 任务计划 */
+    .plan-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    
+    .plan-section.show {
+      display: block;
+    }
+    
+    .plan-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .plan-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .plan-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .step-content {
+      flex: 1;
+    }
+    
+    .step-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .step-command {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: var(--bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    .plan-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .plan-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .plan-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .plan-btn.secondary {
+      background: var(--bg-card-hover);
+      color: var(--text);
+    }
+    
+    /* 执行进度 */
+    .progress-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+    }
+    
+    .progress-section.show {
+      display: block;
+    }
+    
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .progress-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .progress-percent {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    
+    .exec-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .exec-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-card-hover);
+      border-radius: 10px;
+    }
+    
+    .exec-step.running {
+      border: 1px solid var(--primary);
+    }
+    
+    .exec-step.success {
+      border-left: 3px solid var(--success);
+    }
+    
+    .exec-step.error {
+      border-left: 3px solid var(--danger);
+    }
+    
+    .exec-step.pending {
+      opacity: 0.5;
+    }
+    
+    .exec-icon {
+      font-size: 16px;
+    }
+    
+    .exec-content {
+      flex: 1;
+    }
+    
+    .exec-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .exec-cmd {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    
+    .exec-result {
+      font-size: 11px;
+      color: var(--success);
+    }
+    
+    .exec-result.error {
+      color: var(--danger);
+    }
+    
+    /* 任务模板 */
+    .templates-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .template-card {
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .template-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .template-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    
+    .template-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
+    .template-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 聊天式输出 */
+    .chat-output {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+    
+    .chat-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .chat-msg.user {
+      flex-direction: row-reverse;
+    }
+    
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .chat-msg.user .chat-avatar {
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    }
+    
+    .chat-msg.assistant .chat-avatar {
+      background: linear-gradient(135deg, #22d3ee, var(--primary));
+    }
+    
+    .chat-content {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .chat-msg.user .chat-content {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-msg.assistant .chat-content {
+      background: var(--bg-card-hover);
+      border-bottom-left-radius: 4px;
+    }
+    
+    .chat-content pre {
+      background: var(--bg);
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1>🧠 任务分解器</h1>
+      <div></div>
+    </header>
+    
+    <!-- 任务输入 -->
+    <div class="task-section">
+      <div class="section-title">📝 输入任务目标</div>
+      <div class="input-group">
+        <input type="text" class="task-input" id="taskInput" 
+               placeholder="例如：帮我整理桌面、创建项目、清理下载文件夹" 
+               onkeydown="if(event.key==='Enter')parseTask()">
+        <button class="execute-btn" id="parseBtn" onclick="parseTask()">
+          分析任务
+        </button>
+      </div>
+      
+      <div class="quick-tasks">
+        <div class="quick-title">💡 快捷任务：</div>
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="quickTask('整理桌面')">🧹 整理桌面</button>
+          <button class="quick-btn" onclick="quickTask('整理下载')">📦 整理下载</button>
+          <button class="quick-btn" onclick="quickTask('创建项目')">📁 创建项目</button>
+          <button class="quick-btn" onclick="quickTask('清理临时文件')">🗑️ 清理临时文件</button>
+          <button class="quick-btn" onclick="quickTask('备份桌面')">💾 备份桌面</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 任务计划 -->
+    <div class="plan-section" id="planSection">
+      <div class="plan-title">
+        <span>📋</span> 任务执行计划
+      </div>
+      <div class="plan-steps" id="planSteps"></div>
+      <div class="plan-actions">
+        <button class="plan-btn secondary" onclick="cancelPlan()">取消</button>
+        <button class="plan-btn primary" id="confirmBtn" onclick="executePlan()">
+          开始执行
+        </button>
+      </div>
+    </div>
+    
+    <!-- 执行进度 -->
+    <div class="progress-section" id="progressSection">
+      <div class="progress-header">
+        <div class="progress-info">
+          <div class="progress-percent" id="progressPercent">0%</div>
+          <div style="font-size: 13px; color: var(--text-dim);">
+            <span id="currentStep">0</span> / <span id="totalSteps">0</span> 步骤
+          </div>
+        </div>
+        <div style="font-size: 13px; color: var(--text-dim);" id="progressStatus">
+          准备中...
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="exec-steps" id="execSteps"></div>
+    </div>
+    
+    <!-- 聊天输出 -->
+    <div class="chat-output" id="chatOutput" style="display: none;">
+      <div class="chat-title">💬 执行过程</div>
+      <div class="chat-messages" id="chatMessages"></div>
+    </div>
+    
+    <!-- 任务模板 -->
+    <div class="templates-section">
+      <div class="section-title">📚 常用任务模板</div>
+      <div class="templates-grid">
+        <div class="template-card" onclick="quickTask('整理桌面')">
+          <div class="template-icon">🧹</div>
+          <div class="template-name">整理桌面</div>
+          <div class="template-desc">自动分类整理桌面文件</div>
+        </div>
+        <div class="template-card" onclick="quickTask('整理下载')">
+          <div class="template-icon">📦</div>
+          <div class="template-name">整理下载</div>
+          <div class="template-desc">清理下载文件夹</div>
+        </div>
+        <div class="template-card" onclick="quickTask('创建项目')">
+          <div class="template-icon">📁</div>
+          <div class="template-name">创建项目</div>
+          <div class="template-desc">初始化项目结构</div>
+        </div>
+        <div class="template-card" onclick="quickTask('清理临时文件')">
+          <div class="template-icon">🗑️</div>
+          <div class="template-name">清理临时文件</div>
+          <div class="template-desc">清理系统和临时文件</div>
+        </div>
+        <div class="template-card" onclick="quickTask('备份重要文件')">
+          <div class="template-icon">💾</div>
+          <div class="template-name">备份重要文件</div>
+          <div class="template-desc">备份桌面和文档</div>
+        </div>
+        <div class="template-card" onclick="quickTask('安装开发环境')">
+          <div class="template-icon">⚙️</div>
+          <div class="template-name">安装开发环境</div>
+          <div class="template-desc">快速搭建开发环境</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 任务模板库
+    const TASK_TEMPLATES = {
+      '整理桌面': {
+        icon: '🧹',
+        name: '整理桌面',
+        description: '自动分类整理桌面文件',
+        steps: [
+          { name: '查看桌面文件', cmd: 'dir "%USERPROFILE%\\Desktop"' },
+          { name: '创建分类文件夹', cmd: 'mkdir "%USERPROFILE%\\Desktop\\文档"' },
+          { name: '创建图片文件夹', cmd: 'mkdir "%USERPROFILE%\\Desktop\\图片"' },
+          { name: '创建安装包文件夹', cmd: 'mkdir "%USERPROFILE%\\Desktop\\安装包"' },
+          { name: '创建其他文件夹', cmd: 'mkdir "%USERPROFILE%\\Desktop\\其他"' }
+        ]
+      },
+      '整理下载': {
+        icon: '📦',
+        name: '整理下载',
+        description: '清理下载文件夹',
+        steps: [
+          { name: '查看下载文件夹', cmd: 'dir "%USERPROFILE%\\Downloads"' },
+          { name: '创建分类文件夹', cmd: 'mkdir "%USERPROFILE%\\Downloads\\安装包" && mkdir "%USERPROFILE%\\Downloads\\文档" && mkdir "%USERPROFILE%\\Downloads\\图片"' }
+        ]
+      },
+      '创建项目': {
+        icon: '📁',
+        name: '创建项目',
+        description: '初始化项目结构',
+        steps: [
+          { name: '创建项目文件夹', cmd: 'mkdir "C:\\Users\\dongd\\Desktop\\MyProject"' },
+          { name: '创建 src 目录', cmd: 'mkdir "C:\\Users\\dongd\\Desktop\\MyProject\\src"' },
+          { name: '创建 docs 目录', cmd: 'mkdir "C:\\Users\\dongd\\Desktop\\MyProject\\docs"' },
+          { name: '创建 README', cmd: 'echo. > "C:\\Users\\dongd\\Desktop\\MyProject\\README.md"' }
+        ]
+      },
+      '清理临时文件': {
+        icon: '🗑️',
+        name: '清理临时文件',
+        description: '清理系统和临时文件',
+        steps: [
+          { name: '清理临时文件夹', cmd: 'del /q "%TEMP%\\*.*" 2>nul' },
+          { name: '清理浏览器缓存', cmd: 'echo 建议手动清理浏览器缓存' },
+          { name: '清理回收站', cmd: 'echo 请手动清空回收站' }
+        ]
+      },
+      '备份桌面': {
+        icon: '💾',
+        name: '备份桌面',
+        description: '备份桌面重要文件',
+        steps: [
+          { name: '创建备份文件夹', cmd: 'mkdir "%USERPROFILE%\\Desktop\\Backup"' },
+          { name: '备份文件', cmd: 'xcopy "%USERPROFILE%\\Desktop\\*.docx" "%USERPROFILE%\\Desktop\\Backup\\" /y' },
+          { name: '备份完成', cmd: 'echo 备份完成' }
+        ]
+      }
+    };
+    
+    let currentPlan = null;
+    let currentStep = 0;
+    let chatMessages = [];
+    
+    function quickTask(taskName) {
+      document.getElementById('taskInput').value = taskName;
+      parseTask();
+    }
+    
+    function addChat(role, content) {
+      chatMessages.push({ role, content });
+      renderChat();
+    }
+    
+    function renderChat() {
+      const chatOutput = document.getElementById('chatOutput');
+      const chatMessagesEl = document.getElementById('chatMessages');
+      
+      if (chatMessages.length > 0) {
+        chatOutput.style.display = 'block';
+        chatMessagesEl.innerHTML = chatMessages.map(msg => `
+          <div class="chat-msg ${msg.role}">
+            <div class="chat-avatar">${msg.role === 'user' ? '👤' : '🦁'}</div>
+            <div class="chat-content">${formatContent(msg.content)}</div>
+          </div>
+        `).join('');
+      }
+    }
+    
+    function formatContent(content) {
+      if (content.includes('\n')) {
+        return `<pre>${escapeHtml(content)}</pre>`;
+      }
+      return escapeHtml(content).replace(/\n/g, '<br>');
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    async function parseTask() {
+      const input = document.getElementById('taskInput').value.trim();
+      if (!input) return;
+      
+      // 添加用户消息
+      chatMessages = [];
+      addChat('user', input);
+      
+      // 分析任务
+      const taskName = findBestMatch(input);
+      
+      if (taskName && TASK_TEMPLATES[taskName]) {
+        currentPlan = TASK_TEMPLATES[taskName];
+        showPlan();
+        addChat('assistant', `🎯 理解任务：**${currentPlan.name}**\n\n${currentPlan.description}\n\n共 ${currentPlan.steps.length} 个步骤，确认后开始执行。`);
+      } else {
+        addChat('assistant', `🤔 暂不支持该任务 "${input}"\n\n可选任务：\n• 整理桌面\n• 整理下载\n• 创建项目\n• 清理临时文件\n• 备份桌面`);
+      }
+    }
+    
+    function findBestMatch(input) {
+      const lower = input.toLowerCase();
+      
+      // 关键词匹配
+      if (lower.includes('桌面') && (lower.includes('整理') || lower.includes('清理'))) return '整理桌面';
+      if (lower.includes('下载') && (lower.includes('整理') || lower.includes('清理'))) return '整理下载';
+      if (lower.includes('项目') && (lower.includes('创建') || lower.includes('新建'))) return '创建项目';
+      if (lower.includes('临时') && (lower.includes('清理') || lower.includes('删除'))) return '清理临时文件';
+      if (lower.includes('备份') || lower.includes('备份')) return '备份桌面';
+      
+      // 模糊匹配
+      for (const [name, template] of Object.entries(TASK_TEMPLATES)) {
+        if (lower.includes(name.toLowerCase())) return name;
+      }
+      
+      return null;
+    }
+    
+    function showPlan() {
+      const section = document.getElementById('planSection');
+      const stepsEl = document.getElementById('planSteps');
+      
+      section.classList.add('show');
+      
+      stepsEl.innerHTML = currentPlan.steps.map((step, i) => `
+        <div class="plan-step">
+          <div class="step-number">${i + 1}</div>
+          <div class="step-content">
+            <div class="step-name">${step.name}</div>
+            <div class="step-command">${step.cmd}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function cancelPlan() {
+      document.getElementById('planSection').classList.remove('show');
+      document.getElementById('progressSection').classList.remove('show');
+      currentPlan = null;
+    }
+    
+    async function executePlan() {
+      if (!currentPlan) return;
+      
+      // 隐藏计划，显示进度
+      document.getElementById('planSection').classList.remove('show');
+      document.getElementById('progressSection').classList.add('show');
+      
+      const total = currentPlan.steps.length;
+      document.getElementById('totalSteps').textContent = total;
+      currentStep = 0;
+      
+      addChat('assistant', `🚀 开始执行：**${currentPlan.name}**\n\n请稍候...`);
+      
+      // 初始化进度条
+      updateProgress(0, '准备执行...');
+      renderExecSteps();
+      
+      // 依次执行每个步骤
+      for (let i = 0; i < currentPlan.steps.length; i++) {
+        const step = currentPlan.steps[i];
+        currentStep = i + 1;
+        
+        updateProgress((i / total) * 100, `执行中: ${step.name}`);
+        updateExecStep(i, 'running');
+        
+        // 执行命令
+        const result = await executeCommand(step.cmd);
+        
+        if (result.success) {
+          updateExecStep(i, 'success', '✅ 成功');
+          if (result.output) {
+            addChat('assistant', `✅ ${step.name}\n${result.output}`);
+          }
+        } else {
+          updateExecStep(i, 'error', '❌ 失败: ' + result.error);
+          addChat('assistant', `❌ ${step.name} 失败\n${result.error}`);
+        }
+        
+        // 延迟一下，模拟执行过程
+        await new Promise(r => setTimeout(r, 500));
+      }
+      
+      // 完成
+      updateProgress(100, '执行完成！');
+      addChat('assistant', `🎉 **${currentPlan.name} 完成！**\n\n所有步骤已执行完毕。`);
+    }
+    
+    async function executeCommand(cmd) {
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        return await res.json();
+      } catch (e) {
+        return { success: false, error: e.message };
+      }
+    }
+    
+    function updateProgress(percent, status) {
+      document.getElementById('progressFill').style.width = percent + '%';
+      document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+      document.getElementById('currentStep').textContent = currentStep;
+      document.getElementById('progressStatus').textContent = status;
+    }
+    
+    function renderExecSteps() {
+      const stepsEl = document.getElementById('execSteps');
+      stepsEl.innerHTML = currentPlan.steps.map((step, i) => `
+        <div class="exec-step pending" id="exec-step-${i}">
+          <div class="exec-icon" id="exec-icon-${i}">⏳</div>
+          <div class="exec-content">
+            <div class="exec-name">${step.name}</div>
+            <div class="exec-cmd">${step.cmd}</div>
+          </div>
+          <div class="exec-result" id="exec-result-${i}"></div>
+        </div>
+      `).join('');
+    }
+    
+    function updateExecStep(index, status, resultText = '') {
+      const stepEl = document.getElementById(`exec-step-${index}`);
+      const iconEl = document.getElementById(`exec-icon-${index}`);
+      const resultEl = document.getElementById(`exec-result-${index}`);
+      
+      stepEl.className = 'exec-step ' + status;
+      resultEl.textContent = resultText;
+      resultEl.className = 'exec-result' + (status === 'error' ? ' error' : '');
+      
+      const icons = { pending: '⏳', running: '🔄', success: '✅', error: '❌' };
+      iconEl.textContent = icons[status];
+    }
+  </script>
+</body>
+</html>
