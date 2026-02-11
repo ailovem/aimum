@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>命令执行 - AImum</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #6366f1;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
+      --terminal-bg: #0d1117;
+      --terminal-green: #3fb950;
+      --terminal-blue: #58a6ff;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* 命令输入区 */
+    .command-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .command-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .command-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--terminal-green);
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+    }
+    
+    .command-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .command-input::placeholder {
+      color: var(--text-dim);
+    }
+    
+    .execute-btn {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .execute-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    }
+    
+    .execute-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* 快捷命令 */
+    .quick-commands {
+      margin-top: 16px;
+    }
+    
+    .quick-title {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+    
+    .quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .quick-btn {
+      padding: 6px 12px;
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Monaco', 'Consolas', monospace;
+      transition: all 0.2s;
+    }
+    
+    .quick-btn:hover {
+      border-color: var(--primary);
+      color: var(--terminal-green);
+    }
+    
+    /* 终端输出 */
+    .terminal-section {
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .terminal-header {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .terminal-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27ca40; }
+    
+    .clear-btn {
+      padding: 4px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    
+    .terminal-output {
+      padding: 16px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 13px;
+      min-height: 300px;
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    
+    .output-line {
+      padding: 4px 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .output-line.input {
+      color: var(--terminal-blue);
+    }
+    
+    .output-line.success {
+      color: var(--terminal-green);
+    }
+    
+    .output-line.error {
+      color: var(--danger);
+    }
+    
+    .output-line.system {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+    
+    .output-line.command {
+      color: var(--warning);
+    }
+    
+    .output-line.empty {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 40px;
+    }
+    
+    /* 帮助信息 */
+    .help-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .help-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .help-item {
+      background: var(--bg-card-hover);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    
+    .help-key {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 12px;
+      color: var(--terminal-green);
+      margin-bottom: 6px;
+    }
+    
+    .help-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 安全提示 */
+    .security-note {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* 加载动画 */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--text-dim);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 600px) {
+      .input-wrapper {
+        flex-direction: column;
+      }
+      
+      .execute-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1 class="title">
+        <span>💻</span> 命令执行
+      </h1>
+      <div></div>
+    </header>
+    
+    <!-- 命令输入 -->
+    <div class="command-section">
+      <div class="command-title">
+        <span>▶</span> 输入命令
+      </div>
+      
+      <div class="input-wrapper">
+        <input type="text" class="command-input" id="commandInput" 
+               placeholder="输入命令，例如: ls, pwd, node -v, 或者中文描述..."
+               onkeydown="handleKeyDown(event)">
+        <button class="execute-btn" id="executeBtn" onclick="executeCommand()">
+          执行
+        </button>
+      </div>
+      
+      <!-- 快捷命令 -->
+      <div class="quick-commands">
+        <div class="quick-title">💡 快捷命令（点击使用）：</div>
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="setCommand('node -v')">node -v</button>
+          <button class="quick-btn" onclick="setCommand('npm -v')">npm -v</button>
+          <button class="quick-btn" onclick="setCommand('python --version')">python --version</button>
+          <button class="quick-btn" onclick="setCommand('ls -la')">ls -la</button>
+          <button class="quick-btn" onclick="setCommand('pwd')">pwd</button>
+          <button class="quick-btn" onclick="setCommand('whoami')">whoami</button>
+          <button class="quick-btn" onclick="setCommand('uname -a')">uname -a</button>
+          <button class="quick-btn" onclick="setCommand('df -h')">df -h</button>
+          <button class="quick-btn" onclick="setCommand('free -h')">free -h</button>
+          <button class="quick-btn" onclick="setCommand('ps aux')">ps aux</button>
+        </div>
+      </div>
+      
+      <!-- 安全提示 -->
+      <div class="security-note">
+        <span>🔒</span>
+        <span>安全模式已启用：禁止执行删除、格式化等危险命令</span>
+      </div>
+    </div>
+    
+    <!-- 终端输出 -->
+    <div class="terminal-section">
+      <div class="terminal-header">
+        <div class="terminal-title">
+          <div class="terminal-dots">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+          </div>
+          <span>终端</span>
+        </div>
+        <button class="clear-btn" onclick="clearTerminal()">清空</button>
+      </div>
+      <div class="terminal-output" id="terminalOutput">
+        <div class="output-line empty">💻 等待命令输入...</div>
+      </div>
+    </div>
+    
+    <!-- 帮助 -->
+    <div class="help-section">
+      <div class="help-title">
+        <span>📖</span> 命令帮助
+      </div>
+      <div class="help-grid">
+        <div class="help-item">
+          <div class="help-key">ls / ls -la</div>
+          <div class="help-desc">列出当前目录文件</div>
+        </div>
+        <div class="help-item">
+          <div class="help-key">pwd</div>
+          <div class="help-desc">显示当前路径</div>
+        </div>
+        <div class="help-item">
+          <div class="help-key">node -v / npm -v</div>
+          <div class="help-desc">查看 Node.js 版本</div>
+        </div>
+        <div class="help-item">
+          <div class="help-key">whoami</div>
+          <div class="help-desc">查看当前用户</div>
+        </div>
+        <div class="help-item">
+          <div class="help-key">uname -a</div>
+          <div class="help-desc">查看系统信息</div>
+        </div>
+        <div class="help-item">
+          <div class="help-key">df -h / free -h</div>
+          <div class="help-desc">查看磁盘/内存</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const terminal = document.getElementById('terminalOutput');
+    const commandInput = document.getElementById('commandInput');
+    const executeBtn = document.getElementById('executeBtn');
+    let commandHistory = [];
+    let historyIndex = -1;
+    
+    function setCommand(cmd) {
+      commandInput.value = cmd;
+      commandInput.focus();
+    }
+    
+    function handleKeyDown(e) {
+      if (e.key === 'Enter') {
+        executeCommand();
+      } else if (e.key === 'ArrowUp') {
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+        }
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown') {
+        if (historyIndex > 0) {
+          historyIndex--;
+          commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+        } else {
+          historyIndex = -1;
+          commandInput.value = '';
+        }
+        e.preventDefault();
+      }
+    }
+    
+    function addOutput(text, type = '') {
+      // 清空空状态
+      const emptyLine = terminal.querySelector('.empty');
+      if (emptyLine) {
+        emptyLine.remove();
+      }
+      
+      const line = document.createElement('div');
+      line.className = 'output-line ' + type;
+      line.textContent = text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    function clearTerminal() {
+      terminal.innerHTML = '<div class="output-line empty">💻 终端已清空，等待命令...</div>';
+    }
+    
+    async function executeCommand() {
+      const command = commandInput.value.trim();
+      if (!command) return;
+      
+      // 保存历史
+      if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== command) {
+        commandHistory.push(command);
+      }
+      historyIndex = -1;
+      
+      // 清空输入
+      commandInput.value = '';
+      executeBtn.disabled = true;
+      executeBtn.textContent = '⏳';
+      
+      // 显示输入的命令
+      addOutput('$ ' + command, 'input');
+      
+      try {
+        const response = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command })
+        });
+        
+        const result = await response.json();
+        
+        if (result.parsedCommand && result.parsedCommand !== command) {
+          addOutput('→ 执行: ' + result.parsedCommand, 'command');
+        }
+        
+        if (result.success) {
+          if (result.output) {
+            addOutput(result.output, 'success');
+          } else {
+            addOutput('✅ 命令执行成功（无输出）', 'success');
+          }
+        } else {
+          addOutput('❌ ' + result.error, 'error');
+          if (result.code) {
+            addOutput('   退出码: ' + result.code, 'system');
+          }
+        }
+        
+        addOutput('   ' + new Date().toLocaleTimeString('zh-CN'), 'system');
+        
+      } catch (error) {
+        addOutput('❌ 网络错误: ' + error.message, 'error');
+      }
+      
+      executeBtn.disabled = false;
+      executeBtn.textContent = '执行';
+    }
+    
+    // 初始欢迎信息
+    window.onload = () => {
+      addOutput('💻 AImum 命令执行终端', 'system');
+      addOutput('━'.repeat(40), 'system');
+      addOutput('🔒 安全模式已启用', 'system');
+      addOutput('💡 输入命令或点击快捷按钮执行', 'system');
+      addOutput('━'.repeat(40), 'system');
+    };
+  </script>
+</body>
+</html>
