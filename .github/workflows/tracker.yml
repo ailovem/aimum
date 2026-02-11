@@ -1,0 +1,126 @@
+name: AImum Development Tracker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'public/**'
+      - 'scripts/**'
+  pull_request:
+    types: [opened, closed, merged]
+  issues:
+    types: [opened, closed, reopened]
+  schedule:
+    - cron: '0 9 * * 1'  # 每周一 9:00 发送周报
+
+env:
+  FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+
+jobs:
+  update-progress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Calculate progress
+        id: progress
+        run: |
+          npm install -g node
+          node scripts/tracker.js progress > progress.txt
+          echo "percent=$(cat progress.txt)" >> $GITHUB_OUTPUT
+          
+      - name: Generate report
+        run: |
+          node scripts/tracker.js > report.txt
+          cat report.txt
+          
+      - name: Send Feishu notification
+        if: env.FEISHU_WEBHOOK != ''
+        run: |
+          REPORT=$(cat report.txt)
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"msg_type":"text","content":{"text":"'"$REPORT"'"}}' \
+            $FEISHU_WEBHOOK
+
+  pr-notification:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request
+    steps:
+      - name: Send PR notification
+        if: env.FEISHU_WEBHOOK != ''
+        run: |
+          PR_TITLE=${{ github.event.pull_request.title }}
+          PR_URL=${{ github.event.pull_request.html_url }}
+          PR_ACTION=${{ github.event.action }}
+          
+          if [ "$PR_ACTION" == "opened" ]; then
+            EMOJI="🆕"
+          elif [ "$PR_ACTION" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+            EMOJI="✅"
+          else
+            EMOJI="📝"
+          fi
+          
+          MESSAGE="$EMOJI PR $PR_ACTION\n\n$PR_TITLE\n$PR_URL"
+          
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"msg_type":"text","content":{"text":"'"$MESSAGE"'"}}' \
+            $FEISHU_WEBHOOK
+
+  issue-notification:
+    runs-on: ubuntu-latest
+    if: github.event.issue
+    steps:
+      - name: Send Issue notification
+        if: env.FEISHU_WEBHOOK != ''
+        run: |
+          ISSUE_TITLE=${{ github.event.issue.title }}
+          ISSUE_URL=${{ github.event.issue.html_url }}
+          ISSUE_ACTION=${{ github.event.action }}
+          USER=${{ github.event.issue.user.login }}
+          
+          if [ "$ISSUE_ACTION" == "opened" ]; then
+            EMOJI="🐛"
+          elif [ "$ISSUE_ACTION" == "closed" ]; then
+            EMOJI="✅"
+          else
+            EMOJI="📝"
+          fi
+          
+          MESSAGE="$EMOJI Issue $ISSUE_ACTION by @$USER\n\n$ISSUE_TITLE\n$ISSUE_URL"
+          
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"msg_type":"text","content":{"text":"'"$MESSAGE"'"}}' \
+            $FEISHU_WEBHOOK
+
+  weekly-report:
+    runs-on: ubuntu-latest
+    if: github.event.schedule ''
+ !=    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Generate weekly report
+        run: |
+          REPORT=$(node scripts/tracker.js)
+          echo "$REPORT" > weekly_report.md
+          
+      - name: Send weekly report to Feishu
+        if: env.FEISHU_WEBHOOK != ''
+        run: |
+          REPORT=$(cat weekly_report.md)
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"msg_type":"text","content":{"text":"📊 AImum 周报\n\n'"$REPORT"'"}}' \
+            $FEISHU_WEBHOOK

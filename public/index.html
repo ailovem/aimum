@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AImum - AI 操作系统</title>
+  <meta name="theme-color" content="#667eea">
+  <meta name="description" content="一个人活成一个团队 - AI 操作系统">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5a67d8;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --danger: #f56565;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* 启动页 */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s;
+    }
+    
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .logo {
+      font-size: 72px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite;
+    }
+    
+    .tagline {
+      font-size: 18px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 0 40px;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    /* 主界面 */
+    #app {
+      display: none;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    
+    #app.visible {
+      display: block;
+    }
+    
+    /* 头部 */
+    header {
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      padding: 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .token-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.15);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+    
+    .token-icon { font-size: 16px; }
+    
+    /* 导航 */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+    }
+    
+    nav a {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 12px;
+      transition: color 0.2s;
+    }
+    
+    nav a.active {
+      color: var(--primary);
+    }
+    
+    nav a .icon {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    /* 页面容器 */
+    .page {
+      display: none;
+      padding: 20px;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    /* 首页 */
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .hero h2 {
+      font-size: 28px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), #f093fb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero p {
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    
+    /* 部门卡片 */
+    .dept-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .dept-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .dept-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+    
+    .dept-card .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    
+    .dept-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .dept-card p {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* AI 对话页 */
+    #chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 180px);
+      max-height: 600px;
+    }
+    
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    
+    .message {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      max-width: 85%;
+      line-height: 1.5;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message.user {
+      background: var(--primary);
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message.ai {
+      background: var(--card);
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+    }
+    
+    #chat-input-container {
+      display: flex;
+      gap: 12px;
+      padding: 16px 0;
+    }
+    
+    #chat-input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 14px 20px;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+    
+    #chat-input:focus {
+      border-color: var(--primary);
+    }
+    
+    #send-btn {
+      background: var(--primary);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    #send-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* 插件市场 */
+    .plugin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .plugin-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .plugin-icon {
+      font-size: 40px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 12px;
+    }
+    
+    .plugin-info {
+      flex: 1;
+    }
+    
+    .plugin-info h4 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .plugin-info p {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    
+    .plugin-price {
+      font-size: 14px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    
+    .install-btn {
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      align-self: center;
+    }
+    
+    /* 我的页面 */
+    .profile-section {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 16px;
+    }
+    
+    .token-balance {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 16px 0;
+    }
+    
+    .menu-list {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+    }
+    
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+    
+    .menu-item .icon {
+      font-size: 24px;
+      margin-right: 16px;
+    }
+    
+    .menu-item span {
+      flex: 1;
+    }
+    
+    .menu-item .arrow {
+      color: var(--text-dim);
+    }
+    
+    /* 登录弹窗 */
+    #login-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    
+    #login-modal.visible {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 360px;
+    }
+    
+    .modal-content h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .input-group {
+      margin-bottom: 16px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border: none;
+      color: white;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    
+    /* 模型选择 */
+    .model-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    
+    .model-chip {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: var(--text-dim);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    
+    .model-chip.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    /* 加载动画 */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 8px 0;
+    }
+    
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite;
+    }
+    
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 2000;
+    }
+    
+    .toast.visible {
+      opacity: 1;
+    }
+    
+    .toast.success {
+      border: 1px solid var(--success);
+    }
+    
+    .toast.error {
+      border: 1px solid var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <!-- 启动页 -->
+  <div id="splash">
+    <div class="logo">🦁</div>
+    <h1 style="margin-bottom: 16px; font-size: 32px;">AImum</h1>
+    <p class="tagline">一个人活成一个团队<br>AI 操作系统</p>
+  </div>
+  
+  <!-- 主应用 -->
+  <div id="app">
+    <header>
+      <h1>🦁 AImum</h1>
+      <div class="token-display" onclick="showPage('profile')">
+        <span class="token-icon">🪙</span>
+        <span id="token-count">0</span> 令牌
+      </div>
+    </header>
+    
+    <!-- 首页：部门选择 -->
+    <div id="page-home" class="page active">
+      <div class="hero">
+        <h2>选择你的 AI 部门</h2>
+        <p>搭积木一样搭建你的 AI 公司<br>安装插件，解锁能力</p>
+      </div>
+      
+      <div class="dept-grid" id="dept-grid">
+        <!-- 动态生成 -->
+      </div>
+    </div>
+    
+    <!-- AI 对话页 -->
+    <div id="page-chat" class="page">
+      <div class="model-selector" id="model-selector">
+        <!-- 动态生成 -->
+      </div>
+      
+      <div id="chat-container">
+        <div id="chat-messages">
+          <div class="message ai">
+            你好！我是 AImum 🦁<br><br>
+            选择一个部门开始对话，或者直接问我任何问题。
+          </div>
+        </div>
+        
+        <div id="chat-input-container">
+          <input type="text" id="chat-input" placeholder="输入消息..." />
+          <button id="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 插件市场 -->
+    <div id="page-plugins" class="page">
+      <h2 style="margin-bottom: 20px;">🛒 插件市场</h2>
+      <div class="plugin-list" id="plugin-list">
+        <!-- 动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 我的页面 -->
+    <div id="page-profile" class="page">
+      <div class="profile-section">
+        <div class="avatar">👤</div>
+        <h3 id="user-name">游客</h3>
+        <div class="token-balance">
+          <span id="balance">0</span> 🪙
+        </div>
+        <button class="btn-primary" onclick="showToast('令狐充coming soon...', 'success')">
+          令狐充 ⚡
+        </button>
+      </div>
+      
+      <div class="menu-list">
+        <div class="menu-item" onclick="showToast('我的插件coming soon...', 'success')">
+          <span class="icon">🧩</span>
+          <span>我的插件</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('使用记录coming soon...', 'success')">
+          <span class="icon">📊</span>
+          <span>使用记录</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('设置coming soon...', 'success')">
+          <span class="icon">⚙️</span>
+          <span>设置</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="logout()">
+          <span class="icon">🚪</span>
+          <span>退出登录</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <nav>
+      <a href="#" onclick="showPage('home')" class="active" data-page="home">
+        <span class="icon">🏠</span>
+        首页
+      </a>
+      <a href="#" onclick="showPage('chat')" data-page="chat">
+        <span class="icon">🤖</span>
+        AI 对话
+      </a>
+      <a href="#" onclick="showPage('plugins')" data-page="plugins">
+        <span class="icon">🛒</span>
+        市场
+      </a>
+      <a href="#" onclick="showPage('profile')" data-page="profile">
+        <span class="icon">👤</span>
+        我的
+      </a>
+    </nav>
+  </div>
+  
+  <!-- 登录弹窗 -->
+  <div id="login-modal">
+    <div class="modal-content">
+      <h2>🔐 登录 AImum</h2>
+      <form id="login-form">
+        <div class="input-group">
+          <input type="tel" id="phone" placeholder="手机号" required />
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" placeholder="密码" />
+        </div>
+        <button type="submit" class="btn-primary">
+          获取验证码
+        </button>
+      </form>
+      <p style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--text-dim);">
+        登录即表示同意<a href="#" style="color: var(--primary);">用户协议</a>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+  
+  <script>
+    // ==================== 状态管理 ====================
+    const state = {
+      user: null,
+      tokens: 0,
+      currentModel: 'deepseek',
+      currentDept: null,
+      messages: [],
+      installedPlugins: []
+    };
+    
+    const models = [
+      { id: 'deepseek', name: 'DeepSeek', icon: '🌊' },
+      { id: 'minimax', name: 'MiniMax', icon: '⚡' },
+      { id: 'claude', name: 'Claude', icon: '�️️' }
+    ];
+    
+    const departments = [
+      { id: 'sales', name: '销售部', icon: '💼', desc: '获客、跟进、转化' },
+      { id: 'marketing', name: '市场部', icon: '📢', desc: '内容、投放、品牌' },
+      { id: 'finance', name: '财务部', icon: '💰', desc: '记账、报表、风控' },
+      { id: 'admin', name: '行政部', icon: '📋', desc: '日程、提醒、协作' },
+      { id: 'tech', name: '技术部', icon: '💻', desc: '开发、运维、部署' },
+      { id: 'custom', name: '自定义', icon: '🔧', desc: '自定义 AI 能力' }
+    ];
+    
+    const plugins = [
+      {
+        id: 'wechat',
+        name: '微信助手',
+        icon: '💬',
+        desc: '自动回复、消息管理、客户跟进',
+        price: '免费',
+        dept: 'sales'
+      },
+      {
+        id: 'content',
+        name: '内容生成器',
+        icon: '✍️',
+        desc: '小红书、抖音、公众号文案',
+        price: '¥9.9/月',
+        dept: 'marketing'
+      },
+      {
+        id: 'calendar',
+        name: '智能日历',
+        icon: '📅',
+        desc: '自动排期、提醒、行程管理',
+        price: '免费',
+        dept: 'admin'
+      },
+      {
+        id: 'invoice',
+        name: '发票助手',
+        icon: '🧾',
+        desc: '发票识别、记账、对账',
+        price: '¥5/月',
+        dept: 'finance'
+      },
+      {
+        id: 'deploy',
+        name: '一键部署',
+        icon: '🚀',
+        desc: 'GitHub、Vercel、Netlify',
+        price: '¥19/月',
+        dept: 'tech'
+      }
+    ];
+    
+    // ==================== 初始化 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      // 显示启动页 2 秒后进入
+      setTimeout(() => {
+        document.getElementById('splash').classList.add('hidden');
+        document.getElementById('app').classList.add('visible');
+        initApp();
+      }, 2000);
+    });
+    
+    function initApp() {
+      renderDepartments();
+      renderPlugins();
+      renderModelSelector();
+      
+      // 检查登录状态
+      const savedUser = localStorage.getItem('aimum_user');
+      if (savedUser) {
+        state.user = JSON.parse(savedUser);
+        state.tokens = parseInt(localStorage.getItem('aimum_tokens') || '20');
+        updateTokenDisplay();
+      } else {
+        // 未登录，显示登录弹窗
+        document.getElementById('login-modal').classList.add('visible');
+      }
+      
+      // 绑定事件
+      document.getElementById('chat-form')?.addEventListener('submit', sendMessage);
+      document.getElementById('send-btn').addEventListener('click', sendMessage);
+      document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+    }
+    
+    // ==================== 渲染函数 ====================
+    function renderDepartments() {
+      const grid = document.getElementById('dept-grid');
+      grid.innerHTML = departments.map(dept => `
+        <div class="dept-card" onclick="selectDept('${dept.id}')">
+          <div class="icon">${dept.icon}</div>
+          <h3>${dept.name}</h3>
+          <p>${dept.desc}</p>
+        </div>
+      `).join('');
+    }
+    
+    function renderPlugins(filter = null) {
+      const list = document.getElementById('plugin-list');
+      const filtered = filter ? plugins.filter(p => p.dept === filter) : plugins;
+      list.innerHTML = filtered.map(plugin => `
+        <div class="plugin-card" onclick="installPlugin('${plugin.id}')">
+          <div class="plugin-icon">${plugin.icon}</div>
+          <div class="plugin-info">
+            <h4>${plugin.name}</h4>
+            <p>${plugin.desc}</p>
+            <span class="plugin-price">${plugin.price}</span>
+          </div>
+          <button class="install-btn">安装</button>
+        </div>
+      `).join('');
+    }
+    
+    function renderModelSelector() {
+      const selector = document.getElementById('model-selector');
+      selector.innerHTML = models.map(model => `
+        <button class="model-chip ${model.id === state.currentModel ? 'active' : ''}" 
+                onclick="selectModel('${model.id}')">
+          ${model.icon} ${model.name}
+        </button>
+      `).join('');
+    }
+    
+    // ==================== 页面切换 ====================
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      
+      document.getElementById(`page-${pageId}`)?.classList.add('active');
+      document.querySelector(`nav a[data-page="${pageId}"]`)?.classList.add('active');
+    }
+    
+    // ==================== 部门选择 ====================
+    function selectDept(deptId) {
+      state.currentDept = deptId;
+      const dept = departments.find(d => d.id === deptId);
+      
+      showPage('chat');
+      
+      // 添加系统消息
+      addMessage('ai', `已进入 ${dept.name} ${dept.icon}\n\n我可以帮你：\n${dept.desc}\n\n有什么需要帮忙的吗？`);
+      
+      // 清空对话
+      document.getElementById('chat-messages').innerHTML = '';
+      addMessage('ai', `已进入 ${dept.name} ${dept.icon}\n\n我可以帮你：\n${dept.desc}\n\n有什么需要帮忙的吗？`);
+    }
+    
+    // ==================== 模型选择 ====================
+    function selectModel(modelId) {
+      state.currentModel = modelId;
+      const model = models.find(m => m.id === modelId);
+      renderModelSelector();
+      showToast(`已切换到 ${model.name}`, 'success');
+    }
+    
+    // ==================== 发送消息 ====================
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // 检查令牌
+      if (state.tokens <= 0) {
+        showToast('令牌不足，请先充值！', 'error');
+        return;
+      }
+      
+      // 添加用户消息
+      addMessage('user', message);
+      input.value = '';
+      
+      // 显示加载状态
+      showTyping();
+      
+      try {
+        // 调用 AI API
+        const response = await callAI(message);
+        
+        // 隐藏加载
+        hideTyping();
+        
+        // 添加 AI 消息
+        addMessage('ai', response);
+        
+        // 扣除令牌
+        state.tokens--;
+        updateTokenDisplay();
+        saveState();
+        
+      } catch (error) {
+        hideTyping();
+        addMessage('ai', '抱歉，出错了。请重试。');
+        console.error(error);
+      }
+    }
+    
+    // ==================== AI API 调用 ====================
+    async function callAI(message) {
+      // 这里后续对接 OpenClaw Gateway
+      // 现在先用模拟回复
+      
+      const dept = state.currentDept || 'general';
+      
+      // 模拟延迟
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // 根据部门返回不同回复
+      const responses = {
+        sales: `作为你的销售部助手，我建议：\n\n1. 先了解客户需求\n2. 突出产品价值\n3. 解决异议\n4. 促成转化\n\n你需要我帮你写销售话术吗？`,
+        
+        marketing: `作为市场部，我可以帮你：\n\n• 小红书种草文案\n• 抖音脚本\n• 公众号推文\n• 广告投放策略\n\n想先做哪个？`,
+        
+        finance: `财务部为您服务：\n\n• 收支记录\n• 报表生成\n• 发票管理\n• 税务提醒\n\n需要哪项帮助？`,
+        
+        admin: `行政部听候差遣：\n\n• 日程管理\n• 会议提醒\n• 任务分配\n• 协作对接\n\n请指示！`,
+        
+        tech: `技术部上线！\n\n• 代码审查\n• Bug 修复\n• 部署上线\n• 技术咨询\n\n需要帮忙吗？`,
+        
+        custom: `收到！我会根据你的指示来执行。\n\n有什么具体需求？`,
+        
+        general: `你好！我是 AImum 🦁\n\n选择上方的部门开始工作，或者直接问我问题。\n\n我会尽力帮你！`
+      };
+      
+      return responses[dept] || responses.general;
+      
+      // 后续对接真实 API：
+      // const response = await fetch('/api/chat', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ message, model: state.currentModel, dept: state.currentDept })
+      // });
+      // return response.json().then(data => data.reply);
+    }
+    
+    // ==================== 消息显示 ====================
+    function addMessage(role, content) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      div.innerHTML = content.replace(/\n/g, '<br>');
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function showTyping() {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'message ai';
+      div.id = 'typing';
+      div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function hideTyping() {
+      document.getElementById('typing')?.remove();
+    }
+    
+    // ==================== 插件 ====================
+    function installPlugin(pluginId) {
+      const plugin = plugins.find(p => p.id === pluginId);
+      if (state.installedPlugins.includes(pluginId)) {
+        showToast('已安装', 'success');
+        return;
+      }
+      state.installedPlugins.push(pluginId);
+      showToast(`${plugin.name} 安装成功！`, 'success');
+    }
+    
+    // ==================== 令牌 ====================
+    function updateTokenDisplay() {
+      document.getElementById('token-count').textContent = state.tokens;
+      document.getElementById('balance').textContent = state.tokens;
+    }
+    
+    function saveState() {
+      localStorage.setItem('aimum_tokens', state.tokens.toString());
+    }
+    
+    // ==================== 登录 ====================
+    function handleLogin(e) {
+      e.preventDefault();
+      const phone = document.getElementById('phone').value;
+      
+      if (!phone || phone.length < 11) {
+        showToast('请输入正确的手机号', 'error');
+        return;
+      }
+      
+      // 模拟登录成功
+      state.user = { phone };
+      state.tokens = 20; // 新用户 20 令牌
+      
+      localStorage.setItem('aimum_user', JSON.stringify(state.user));
+      updateTokenDisplay();
+      saveState();
+      
+      document.getElementById('login-modal').classList.remove('visible');
+      document.getElementById('user-name').textContent = phone.slice(-4);
+      showToast('登录成功！送你 20 令牌', 'success');
+    }
+    
+    function logout() {
+      localStorage.removeItem('aimum_user');
+      localStorage.removeItem('aimum_tokens');
+      state.user = null;
+      state.tokens = 0;
+      document.getElementById('login-modal').classList.add('visible');
+      showToast('已退出', 'success');
+    }
+    
+    // ==================== Toast ====================
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} visible`;
+      
+      setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 3000);
+    }
+    
+    // ==================== PWA ====================
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>

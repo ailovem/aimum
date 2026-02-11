@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum 开发进度</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5a67d8;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --card-hover: #252542;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    /* 头部 */
+    header {
+      text-align: center;
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    
+    /* 进度总览 */
+    .progress-overview {
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-overview::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .progress-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-percent {
+      font-size: 80px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .progress-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 20px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    /* 进度条 */
+    .progress-bar-container {
+      background: rgba(255,255,255,0.15);
+      height: 20px;
+      border-radius: 10px;
+      margin: 30px 0 20px;
+      overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fff, #f093fb);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    /* 阶段卡片 */
+    .phase {
+      background: var(--card);
+      border-radius: 20px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+    
+    .phase-header {
+      padding: 24px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .phase-header:hover {
+      background: var(--card-hover);
+    }
+    
+    .phase-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .phase-icon {
+      font-size: 32px;
+    }
+    
+    .phase-name {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    
+    .phase-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .phase-progress {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .phase-toggle {
+      font-size: 24px;
+      color: var(--text-dim);
+      transition: transform 0.3s;
+    }
+    
+    .phase.collapsed .phase-toggle {
+      transform: rotate(-90deg);
+    }
+    
+    .phase-tasks {
+      padding: 0 30px 30px;
+      max-height: 2000px;
+      overflow: hidden;
+      transition: max-height 0.5s ease, padding 0.5s ease;
+    }
+    
+    .phase.collapsed .phase-tasks {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    
+    /* 任务项 */
+    .task {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .task:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    .task.completed {
+      opacity: 0.6;
+      background: rgba(72, 187, 120, 0.1);
+      border-color: rgba(72, 187, 120, 0.2);
+    }
+    
+    .task.completed .task-name {
+      text-decoration: line-through;
+    }
+    
+    .task-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      margin-right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .task.completed .task-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    .task-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 16px;
+      display: none;
+    }
+    
+    .task.completed .task-checkbox::after {
+      display: block;
+    }
+    
+    .task-info {
+      flex: 1;
+    }
+    
+    .task-name {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .task-meta {
+      font-size: 13px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 15px;
+    }
+    
+    .task-hours {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .task-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .task-status.pending {
+      color: var(--warning);
+    }
+    
+    .task-status.done {
+      color: var(--success);
+    }
+    
+    .task-status.in-progress {
+      color: var(--primary);
+    }
+    
+    /* 快捷操作 */
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .action-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .action-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .action-btn.primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .action-btn.secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .action-btn.secondary:hover {
+      background: var(--card-hover);
+    }
+    
+    /* 统计 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .stat-card .icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+    
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+    
+    .stat-card .label {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    
+    /* 时间线 */
+    .timeline {
+      margin-top: 40px;
+      padding: 30px;
+      background: var(--card);
+      border-radius: 20px;
+    }
+    
+    .timeline h3 {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      padding-bottom: 20px;
+      border-left: 2px solid rgba(102, 126, 234, 0.3);
+      padding-left: 20px;
+      margin-left: 10px;
+      position: relative;
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    
+    .timeline-item:last-child {
+      border-left: none;
+    }
+    
+    .timeline-date {
+      font-size: 13px;
+      color: var(--text-dim);
+      min-width: 80px;
+    }
+    
+    .timeline-content {
+      flex: 1;
+    }
+    
+    .timeline-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .timeline-desc {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .progress-percent {
+        font-size: 56px;
+      }
+      
+      .progress-stats {
+        gap: 20px;
+      }
+      
+      .stat-value {
+        font-size: 24px;
+      }
+      
+      h1 {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🦁 AImum 开发进度</h1>
+      <p class="subtitle">一人公司 AI 操作系统</p>
+    </header>
+    
+    <!-- 进度总览 -->
+    <div class="progress-overview">
+      <div class="progress-content">
+        <div class="progress-percent" id="totalProgress">16%</div>
+        
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBar" style="width: 16%">16%</div>
+        </div>
+        
+        <div class="progress-stats">
+          <div class="stat">
+            <div class="stat-value" id="completedCount">5</div>
+            <div class="stat-label">已完成任务</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="totalCount">31</div>
+            <div class="stat-label">总任务数</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="hoursCount">26h</div>
+            <div class="stat-label">已完成工时</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 快捷操作 -->
+    <div class="actions">
+      <button class="action-btn primary" onclick="refreshProgress()">
+        🔄 刷新进度
+      </button>
+      <button class="action-btn secondary" onclick="resetProgress()">
+        🔄 重置进度
+      </button>
+      <button class="action-btn secondary" onclick="window.open('file:///D:/openwork/00_active/aimum/PRD.md', '_blank')">
+        📋 查看PRD
+      </button>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon">🚀</div>
+        <div class="value" id="phase1Progress">43%</div>
+        <div class="label">Phase 1: MVP</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">⚡</div>
+        <div class="value" id="phase2Progress">0%</div>
+        <div class="label">Phase 2: 增强</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🌐</div>
+        <div class="value" id="phase3Progress">0%</div>
+        <div class="label">Phase 3: 生态</div>
+      </div>
+    </div>
+    
+    <!-- 阶段任务 -->
+    <div id="phases"></div>
+    
+    <!-- 时间线 -->
+    <div class="timeline">
+      <h3>📅 活动时间线</h3>
+      <div id="timeline"></div>
+    </div>
+  </div>
+  
+  <script>
+    // 任务数据
+    const projectData = {
+      phases: [
+        {
+          id: 'phase1',
+          name: 'Phase 1: MVP',
+          icon: '🚀',
+          tasks: [
+            { id: 'p1-1', name: '产品需求文档', hours: 4, status: 'done', date: '2026-02-11' },
+            { id: 'p1-2', name: '技术架构设计', hours: 4, status: 'done', date: '2026-02-11' },
+            { id: 'p1-3', name: '项目初始化', hours: 2, status: 'in_progress', date: '2026-02-11' },
+            { id: 'p1-4', name: '用户系统开发', hours: 8, status: 'pending', date: '-' },
+            { id: 'p1-5', name: 'AI 对话核心', hours: 8, status: 'pending', date: '-' },
+            { id: 'p1-6', name: '令牌系统', hours: 4, status: 'pending', date: '-' },
+            { id: 'p1-7', name: '插件市场', hours: 6, status: 'pending', date: '-' },
+            { id: 'p1-8', name: '前端 UI 开发', hours: 12, status: 'pending', date: '-' },
+            { id: 'p1-9', name: 'PWA 配置', hours: 2, status: 'pending', date: '-' },
+            { id: 'p1-10', name: '部署配置', hours: 2, status: 'pending', date: '-' },
+            { id: 'p1-11', name: '单元测试', hours: 4, status: 'pending', date: '-' },
+            { id: 'p1-12', name: '文档编写', hours: 4, status: 'pending', date: '-' }
+          ]
+        },
+        {
+          id: 'phase2',
+          name: 'Phase 2: 增强',
+          icon: '⚡',
+          tasks: [
+            { id: 'p2-1', name: '工作流引擎', hours: 16, status: 'pending', date: '-' },
+            { id: 'p2-2', name: '微信集成', hours: 8, status: 'pending', date: '-' },
+            { id: 'p2-3', name: '飞书集成', hours: 8, status: 'pending', date: '-' },
+            { id: 'p2-4', name: '桌面客户端', hours: 12, status: 'pending', date: '-' },
+            { id: 'p2-5', name: '性能优化', hours: 4, status: 'pending', date: '-' },
+            { id: 'p2-6', name: '安全加固', hours: 4, status: 'pending', date: '-' },
+            { id: 'p2-7', name: '用户指南', hours: 4, status: 'pending', date: '-' }
+          ]
+        },
+        {
+          id: 'phase3',
+          name: 'Phase 3: 生态',
+          icon: '🌐',
+          tasks: [
+            { id: 'p3-1', name: '插件 SDK', hours: 16, status: 'pending', date: '-' },
+            { id: 'p3-2', name: '开发者文档', hours: 8, status: 'pending', date: '-' },
+            { id: 'p3-3', name: 'API 开放', hours: 12, status: 'pending', date: '-' },
+            { id: 'p3-4', name: '插件审核系统', hours: 8, status: 'pending', date: '-' },
+            { id: 'p3-5', name: '企业版功能', hours: 16, status: 'pending', date: '-' },
+            { id: 'p3-6', name: '多租户支持', hours: 12, status: 'pending', date: '-' }
+          ]
+        }
+      ]
+    };
+    
+    // 状态配置
+    const statusConfig = {
+      pending: { label: '待开始', icon: '⏳', class: 'pending' },
+      in_progress: { label: '进行中', icon: '🔄', class: 'in-progress' },
+      done: { label: '已完成', icon: '✅', class: 'done' }
+    };
+    
+    // 加载进度
+    function loadProgress() {
+      const saved = localStorage.getItem('aimum_progress');
+      if (saved) {
+        const data = JSON.parse(saved);
+        data.phases.forEach(phase => {
+          const projectPhase = projectData.phases.find(p => p.id === phase.id);
+          if (projectPhase) {
+            phase.tasks.forEach(task => {
+              const projectTask = projectPhase.tasks.find(t => t.id === task.id);
+              if (projectTask) {
+                projectTask.status = task.status;
+                projectTask.date = task.date;
+              }
+            });
+          }
+        });
+      }
+    }
+    
+    // 保存进度
+    function saveProgress() {
+      const data = {
+        timestamp: new Date().toISOString(),
+        phases: projectData.phases.map(phase => ({
+          id: phase.id,
+          tasks: phase.tasks.map(task => ({
+            id: task.id,
+            status: task.status,
+            date: task.date
+          }))
+        }))
+      };
+      localStorage.setItem('aimum_progress', JSON.stringify(data));
+    }
+    
+    // 切换任务状态
+    function toggleTask(phaseId, taskId) {
+      const phase = projectData.phases.find(p => p.id === phaseId);
+      const task = phase.tasks.find(t => t.id === taskId);
+      
+      if (task.status === 'done') {
+        task.status = 'pending';
+        task.date = '-';
+      } else {
+        task.status = 'done';
+        task.date = new Date().toISOString().split('T')[0];
+      }
+      
+      saveProgress();
+      render();
+    }
+    
+    // 计算进度
+    function calculateProgress() {
+      let totalTasks = 0;
+      let completedTasks = 0;
+      let totalHours = 0;
+      let completedHours = 0;
+      
+      projectData.phases.forEach(phase => {
+        let phaseTasks = 0;
+        let phaseCompleted = 0;
+        let phaseHours = 0;
+        let phaseCompletedHours = 0;
+        
+        phase.tasks.forEach(task => {
+          totalTasks++;
+          totalHours += task.hours;
+          
+          if (task.status === 'done') {
+            completedTasks++;
+            completedHours += task.hours;
+            phaseCompleted++;
+            phaseCompletedHours += task.hours;
+          }
+          phaseTasks++;
+          phaseHours += task.hours;
+        });
+        
+        phase.progress = phaseTasks > 0 ? Math.round((phaseCompleted / phaseTasks) * 100) : 0;
+        phase.completedTasks = phaseCompleted;
+        phase.totalTasks = phaseTasks;
+        phase.completedHours = phaseCompletedHours;
+        phase.totalHours = phaseHours;
+      });
+      
+      const totalPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      
+      return {
+        totalTasks,
+        completedTasks,
+        totalHours,
+        completedHours,
+        totalPercent
+      };
+    }
+    
+    // 渲染
+    function render() {
+      const progress = calculateProgress();
+      
+      // 更新总览
+      document.getElementById('totalProgress').textContent = progress.totalPercent + '%';
+      document.getElementById('progressBar').style.width = progress.totalPercent + '%';
+      document.getElementById('progressBar').textContent = progress.totalPercent + '%';
+      document.getElementById('completedCount').textContent = progress.completedTasks;
+      document.getElementById('totalCount').textContent = progress.totalTasks;
+      document.getElementById('hoursCount').textContent = progress.completedHours + 'h';
+      
+      // 更新阶段进度
+      projectData.phases.forEach(phase => {
+        document.getElementById(phase.id + 'Progress').textContent = phase.progress + '%';
+      });
+      
+      // 渲染阶段任务
+      const phasesHTML = projectData.phases.map(phase => `
+        <div class="phase" id="phase-${phase.id}">
+          <div class="phase-header" onclick="togglePhase('${phase.id}')">
+            <div class="phase-title">
+              <span class="phase-icon">${phase.icon}</span>
+              <span class="phase-name">${phase.name}</span>
+            </div>
+            <div class="phase-info">
+              <span class="phase-progress">${phase.progress}% (${phase.completedTasks}/${phase.totalTasks})</span>
+              <span class="phase-toggle">▼</span>
+            </div>
+          </div>
+          <div class="phase-tasks">
+            ${phase.tasks.map(task => `
+              <div class="task ${task.status}" onclick="toggleTask('${phase.id}', '${task.id}')">
+                <div class="task-checkbox"></div>
+                <div class="task-info">
+                  <div class="task-name">${task.name}</div>
+                  <div class="task-meta">
+                    <span class="task-hours">🕐 ${task.hours}h</span>
+                    <span class="task-status ${statusConfig[task.status].class}">
+                      ${statusConfig[task.status].icon} ${statusConfig[task.status].label}
+                    </span>
+                    <span>📅 ${task.date}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('phases').innerHTML = phasesHTML;
+      
+      // 渲染时间线
+      const timelineItems = [];
+      projectData.phases.forEach(phase => {
+        phase.tasks.filter(t => t.status === 'done').forEach(task => {
+          timelineItems.push({
+            date: task.date,
+            title: task.name,
+            phase: phase.name,
+            icon: phase.icon
+          });
+        });
+      });
+      
+      timelineItems.sort((a, b) => b.date.localeCompare(a.date));
+      
+      const timelineHTML = timelineItems.slice(0, 5).map(item => `
+        <div class="timeline-item">
+          <div class="timeline-date">${item.date}</div>
+          <div class="timeline-content">
+            <div class="timeline-title">${item.icon} ${item.title}</div>
+            <div class="timeline-desc">${item.phase}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('timeline').innerHTML = timelineHTML || '<p style="color: var(--text-dim)">暂无活动记录</p>';
+    }
+    
+    // 折叠阶段
+    function togglePhase(phaseId) {
+      document.getElementById('phase-' + phaseId).classList.toggle('collapsed');
+    }
+    
+    // 刷新进度
+    function refreshProgress() {
+      render();
+      alert('✅ 进度已刷新！\n\n完成: ' + calculateProgress().completedTasks + ' / ' + calculateProgress().totalTasks);
+    }
+    
+    // 重置进度
+    function resetProgress() {
+      if (confirm('确定要重置所有进度吗？此操作不可恢复！')) {
+        localStorage.removeItem('aimum_progress');
+        projectData.phases.forEach(phase => {
+          phase.tasks.forEach(task => {
+            task.status = 'pending';
+            task.date = '-';
+          });
+        });
+        render();
+        alert('✅ 进度已重置！');
+      }
+    }
+    
+    // 初始化
+    loadProgress();
+    render();
+    
+    // 自动刷新（每30秒）
+    setInterval(render, 30000);
+  </script>
+</body>
+</html>

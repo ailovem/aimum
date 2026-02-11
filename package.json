@@ -1,0 +1,41 @@
+{
+  "name": "aimum",
+  "version": "0.1.0",
+  "description": "AI Operating System for One-Person Companies",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel --prod",
+    
+    "progress": "start file:///D:/openwork/00_active/aimum/public/progress.html",
+    "progress:open": "start file:///D:/openwork/00_active/aimum/public/progress.html",
+    
+    "tracker": "node scripts/tracker.js",
+    "tracker:progress": "node scripts/tracker.js progress",
+    "tracker:report": "node scripts/tracker.js",
+    "tracker:notify": "node scripts/tracker.js notify",
+    
+    "session": "node scripts/session-starter.js",
+    "session:start": "node scripts/session-starter.js",
+    
+    "smart": "node scripts/smart-start.js",
+    "smart:start": "node scripts/smart-start.js",
+    
+    "context": "node scripts/context-manager.js",
+    "context:restore": "node scripts/context-manager.js restore",
+    "context:status": "node scripts/context-manager.js test",
+    
+    "hook": "node scripts/session-hook.js",
+    "hook:test": "node scripts/session-hook.js test",
+    "hook:restore": "node scripts/session-hook.js restore",
+    "hook:status": "node scripts/session-hook.js status",
+    
+    "save": "node scripts/session-hook.js manual_save",
+    
+    "status": "node scripts/smart-start.js && node scripts/tracker.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
