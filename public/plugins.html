@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AImum - 插件市场</title>
+  <title>插件升级 - AImum</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --primary: #667eea;
-      --bg: #0f0f23;
-      --card: #1a1a2e;
-      --card-hover: #252542;
-      --text: #e2e8f0;
-      --text-dim: #a0aec0;
+      --primary: #6366f1;
+      --accent: #22d3ee;
       --success: #10b981;
       --warning: #f59e0b;
-      --border: rgba(255,255,255,0.1);
+      --danger: #ef4444;
+      --bg: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card-hover: #1a1a24;
+      --text: #f4f4f5;
+      --text-dim: #71717a;
+      --border: rgba(255,255,255,0.08);
     }
     
     body {
@@ -24,387 +26,412 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px;
     }
     
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
     }
     
     header {
-      padding: 40px 20px;
-      margin-bottom: 30px;
-    }
-    
-    h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 15px;
-    }
-    
-    .subtitle {
-      color: var(--text-dim);
-    }
-    
-    /* 标签页 */
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 20px;
     }
     
-    .tab {
-      padding: 12px 24px;
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      border-radius: 12px;
-      font-size: 14px;
-      transition: all 0.2s;
+    .back-btn {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-    
-    .tab:hover {
-      background: var(--card-hover);
-    }
-    
-    .tab.active {
-      background: var(--primary);
-      color: white;
-    }
-    
-    /* 搜索栏 */
-    .search-bar {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 14px 20px;
-      background: var(--card);
+      padding: 8px 16px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 8px;
       color: var(--text);
-      font-size: 15px;
-    }
-    
-    .search-input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    
-    .search-input::placeholder {
-      color: var(--text-dim);
-    }
-    
-    .sort-select {
-      padding: 14px 20px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: var(--text);
-      font-size: 14px;
       cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* 统计卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
     }
     
     /* 分类标签 */
     .categories {
       display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
+      gap: 8px;
+      margin-bottom: 24px;
       flex-wrap: wrap;
     }
     
-    .category {
-      padding: 10px 20px;
-      background: var(--card);
+    .cat-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 25px;
+      border-radius: 8px;
       color: var(--text-dim);
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       transition: all 0.2s;
     }
     
-    .category:hover {
+    .cat-btn:hover, .cat-btn.active {
+      background: rgba(99, 102, 241, 0.1);
       border-color: var(--primary);
+      color: var(--text);
     }
     
-    .category.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-    
-    /* 插件网格 */
+    /* 插件列表 */
     .plugins-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
     }
     
     .plugin-card {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 24px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
       transition: all 0.2s;
     }
     
     .plugin-card:hover {
       border-color: var(--primary);
-      transform: translateY(-4px);
     }
     
     .plugin-header {
       display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 16px;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
     }
     
     .plugin-icon {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, var(--primary), #764ba2);
-      border-radius: 16px;
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      flex-shrink: 0;
+      font-size: 26px;
     }
     
     .plugin-info {
       flex: 1;
-      min-width: 0;
     }
     
     .plugin-name {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
       margin-bottom: 4px;
     }
     
-    .plugin-author {
-      font-size: 13px;
+    .plugin-version {
+      font-size: 12px;
       color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     
-    .plugin-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-    
-    .plugin-badge.builtin {
-      background: rgba(102, 126, 234, 0.2);
+    .version-badge {
+      padding: 2px 8px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 10px;
       color: var(--primary);
     }
     
-    .plugin-badge.paid {
-      background: rgba(245, 158, 11, 0.2);
+    .update-badge {
+      padding: 2px 8px;
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 10px;
       color: var(--warning);
+      font-size: 10px;
     }
     
-    .plugin-description {
+    .plugin-desc {
+      font-size: 13px;
       color: var(--text-dim);
-      font-size: 14px;
       line-height: 1.6;
-      margin-bottom: 16px;
-    }
-    
-    .plugin-tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    
-    .plugin-tag {
-      padding: 4px 10px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      font-size: 12px;
-      color: var(--text-dim);
+      margin-bottom: 14px;
     }
     
     .plugin-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-top: 16px;
+      padding-top: 14px;
       border-top: 1px solid var(--border);
     }
     
-    .plugin-price {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--primary);
+    .plugin-stats {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--text-dim);
     }
     
-    .plugin-price.free {
-      color: var(--success);
+    .plugin-actions {
+      display: flex;
+      gap: 8px;
     }
     
-    .plugin-action {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
+    .plugin-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
     
-    .plugin-action.install {
-      background: var(--primary);
+    .plugin-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
       color: white;
     }
     
-    .plugin-action.install:hover {
-      background: #5a67d8;
+    .plugin-btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
     }
     
-    .plugin-action.uninstall {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
+    .plugin-btn.warning {
+      background: rgba(245, 158, 11, 0.1);
+      border: none;
+      color: var(--warning);
     }
     
-    .plugin-action.uninstall:hover {
-      background: rgba(239, 68, 68, 0.3);
+    .plugin-btn:hover {
+      transform: translateY(-1px);
     }
     
-    .plugin-action.enabled {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--success);
+    .plugin-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
     }
     
-    .plugin-action.disabled {
-      background: rgba(255,255,255,0.1);
-      color: var(--text-dim);
+    /* 更新弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
     }
     
-    /* 已安装标签页 */
-    .installed-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+    .modal.show {
+      display: flex;
     }
     
-    .installed-card {
-      background: var(--card);
-      border-radius: 16px;
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+    }
+    
+    .modal-header {
       padding: 20px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 16px;
-      border: 1px solid var(--border);
+      gap: 14px;
     }
     
-    .installed-icon {
+    .modal-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, var(--primary), #764ba2);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      flex-shrink: 0;
     }
     
-    .installed-info {
+    .modal-title {
       flex: 1;
-      min-width: 0;
     }
     
-    .installed-name {
+    .modal-name {
+      font-size: 16px;
       font-weight: 600;
-      margin-bottom: 4px;
     }
     
-    .installed-status {
+    .modal-version {
       font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-card-hover);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .update-info {
+      background: var(--bg-card-hover);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .update-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-    
-    .status-dot.enabled {
-      background: var(--success);
-    }
-    
-    .status-dot.disabled {
-      background: var(--text-dim);
-    }
-    
-    .installed-toggle {
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+    .update-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
       color: var(--text-dim);
-      cursor: pointer;
-      font-size: 12px;
     }
     
-    .installed-toggle:hover {
-      border-color: var(--primary);
+    .update-item.add {
+      color: var(--success);
+    }
+    
+    .update-item.fix {
+      color: var(--accent);
+    }
+    
+    .progress-section {
+      display: none;
+    }
+    
+    .progress-section.show {
+      display: block;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    
+    .progress-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .modal-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .modal-btn.secondary {
+      background: var(--bg-card-hover);
       color: var(--text);
     }
     
     /* 空状态 */
-    .empty-state {
+    .empty {
       text-align: center;
       padding: 60px 20px;
       color: var(--text-dim);
     }
     
     .empty-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
     }
     
-    .empty-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 10px;
+    .empty-text {
+      font-size: 14px;
     }
     
-    /* 响应式 */
-    @media (max-width: 768px) {
-      .search-bar {
-        flex-direction: column;
-      }
-      
-      .tabs {
-        overflow-x: auto;
-        padding-bottom: 10px;
-      }
-      
-      .plugin-card {
-        padding: 20px;
+    @media (max-width: 900px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -412,315 +439,380 @@
 <body>
   <div class="container">
     <header>
-      <h1>🦁 插件市场</h1>
-      <p class="subtitle">扩展 AImum 的能力，让 AI 更强大</p>
+      <button class="back-btn" onclick="location.href='core.html'">
+        ← 返回
+      </button>
+      <h1 class="title">🔌 插件升级</h1>
+      <div></div>
     </header>
     
-    <!-- 标签页 -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('explore')">
-        🔍 探索插件
-      </button>
-      <button class="tab" onclick="switchTab('installed')">
-        📦 已安装
-      </button>
-    </div>
-    
-    <!-- 探索插件 -->
-    <div id="exploreTab">
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <input type="text" class="search-input" id="searchInput" 
-               placeholder="搜索插件..." onkeyup="handleSearch(event)">
-        <select class="sort-select" id="sortSelect" onchange="handleSort()">
-          <option value="popular">🔥 热门</option>
-          <option value="newest">🆕 最新</option>
-          <option value="price">💰 价格</option>
-        </select>
+    <!-- 统计 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">8</div>
+        <div class="stat-label">已安装插件</div>
       </div>
-      
-      <!-- 分类 -->
-      <div class="categories" id="categories">
-        <!-- 分类会动态加载 -->
+      <div class="stat-card">
+        <div class="stat-value">3</div>
+        <div class="stat-label">可更新</div>
       </div>
-      
-      <!-- 插件列表 -->
-      <div class="plugins-grid" id="pluginsGrid">
-        <!-- 插件会动态加载 -->
+      <div class="stat-card">
+        <div class="stat-value">5</div>
+        <div class="stat-label">正常运行</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">v2.1</div>
+        <div class="stat-label">系统版本</div>
       </div>
     </div>
     
-    <!-- 已安装 -->
-    <div id="installedTab" style="display: none;">
-      <div class="installed-grid" id="installedGrid">
-        <!-- 已安装插件会动态加载 -->
+    <!-- 分类 -->
+    <div class="categories">
+      <button class="cat-btn active" onclick="filterByCategory('all', this)">全部</button>
+      <button class="cat-btn" onclick="filterByCategory('update', this)">🔄 可更新 (3)</button>
+      <button class="cat-btn" onclick="filterByCategory('core', this)">⚡ 核心</button>
+      <button class="cat-btn" onclick="filterByCategory('ext', this)">🔧 扩展</button>
+      <button class="cat-btn" onclick="filterByCategory('theme', this)">🎨 主题</button>
+    </div>
+    
+    <!-- 插件列表 -->
+    <div class="plugins-grid" id="pluginsGrid"></div>
+  </div>
+  
+  <!-- 更新弹窗 -->
+  <div class="modal" id="updateModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon">🔌</div>
+        <div class="modal-title">
+          <div class="modal-name" id="modalName">插件名称</div>
+          <div class="modal-version" id="modalVersion">v1.0 → v2.0</div>
+        </div>
+        <button class="modal-close" onclick="closeUpdateModal()">×</button>
       </div>
-      
-      <div class="empty-state" id="emptyInstalled" style="display: none;">
-        <div class="empty-icon">📦</div>
-        <div class="empty-title">暂无已安装插件</div>
-        <p>去探索插件市场安装更多插件吧！</p>
+      <div class="modal-body">
+        <div class="update-info" id="updateInfo">
+          <div class="update-title">📋 更新内容</div>
+          <div id="updateList"></div>
+        </div>
+        
+        <div class="progress-section" id="progressSection">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progressText">正在下载更新包...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeUpdateModal()">取消</button>
+        <button class="modal-btn primary" id="updateBtn" onclick="startUpdate()">立即更新</button>
       </div>
     </div>
   </div>
   
   <script>
-    const API_BASE = '/api/plugins';
-    let currentTab = 'explore';
-    let currentCategory = 'all';
-    let currentSort = 'popular';
-    let searchKeyword = '';
-    let installedPlugins = new Map();
+    const plugins = [
+      {
+        id: 'ai-chat',
+        name: 'AI对话核心',
+        icon: '🦁',
+        version: 'v2.0',
+        latestVersion: 'v2.1',
+        category: 'core',
+        desc: '提供 AI 对话能力，支持多模型切换和上下文理解',
+        downloads: 45678,
+        rating: 4.9,
+        hasUpdate: true,
+        features: ['多模型支持', '上下文记忆', '语音输入'],
+        updates: [
+          { type: 'add', text: '新增 Claude 3 模型支持' },
+          { type: 'fix', text: '修复长对话内存泄漏' },
+          { type: 'fix', text: '优化响应速度 30%' }
+        ]
+      },
+      {
+        id: 'file-convert',
+        name: '文件转换',
+        icon: '🔄',
+        version: 'v1.5',
+        latestVersion: 'v1.8',
+        category: 'ext',
+        desc: '支持 PDF、Word、Excel 等格式互相转换',
+        downloads: 32456,
+        rating: 4.7,
+        hasUpdate: true,
+        features: ['100+格式', '批量处理', '云端加速'],
+        updates: [
+          { type: 'add', text: '新增图片转 PDF' },
+          { type: 'fix', text: '修复大文件崩溃问题' },
+          { type: 'fix', text: '提升转换速度' }
+        ]
+      },
+      {
+        id: 'wechat-bot',
+        name: '微信机器人',
+        icon: '💬',
+        version: 'v2.3',
+        latestVersion: 'v2.5',
+        category: 'ext',
+        desc: '企业微信/个人微信自动回复和消息管理',
+        downloads: 28934,
+        rating: 4.8,
+        hasUpdate: true,
+        features: ['自动回复', '群管理', '消息推送'],
+        updates: [
+          { type: 'add', text: '支持消息加密' },
+          { type: 'fix', text: '修复图片发送失败' },
+          { type: 'fix', text: '优化消息延迟' }
+        ]
+      },
+      {
+        id: 'task-manager',
+        name: '任务管理',
+        icon: '📋',
+        version: 'v1.9',
+        latestVersion: 'v1.9',
+        category: 'core',
+        desc: '智能任务分解、进度追踪和提醒通知',
+        downloads: 34567,
+        rating: 4.6,
+        hasUpdate: false,
+        features: ['智能分解', '进度追踪', '自动提醒']
+      },
+      {
+        id: 'data-analyze',
+        name: '数据分析',
+        icon: '📊',
+        version: 'v1.2',
+        latestVersion: 'v1.2',
+        category: 'ext',
+        desc: '自动分析数据，生成可视化报表和洞察',
+        downloads: 18765,
+        rating: 4.5,
+        hasUpdate: false,
+        features: ['自动分析', '图表生成', '趋势预测']
+      },
+      {
+        id: 'dark-theme',
+        name: '深色主题',
+        icon: '🌙',
+        version: 'v1.0',
+        latestVersion: 'v1.0',
+        category: 'theme',
+        desc: '舒适的深色界面主题，减少眼睛疲劳',
+        downloads: 56789,
+        rating: 4.9,
+        hasUpdate: false,
+        features: ['护眼模式', '自动切换', '自定义颜色']
+      },
+      {
+        id: 'calendar',
+        name: '智能日历',
+        icon: '📅',
+        version: 'v1.4',
+        latestVersion: 'v1.4',
+        category: 'core',
+        desc: '自动安排日程，智能时间管理和提醒',
+        downloads: 23456,
+        rating: 4.7,
+        hasUpdate: false,
+        features: ['自动排程', '冲突检测', '多端同步']
+      },
+      {
+        id: 'cloud-storage',
+        name: '云盘同步',
+        icon: '☁️',
+        version: 'v1.1',
+        latestVersion: 'v1.3',
+        category: 'ext',
+        desc: '文件云端存储和多设备同步',
+        downloads: 12345,
+        rating: 4.4,
+        hasUpdate: true,
+        features: ['自动备份', '多端同步', '分享链接'],
+        updates: [
+          { type: 'add', text: '支持团队文件夹' },
+          { type: 'fix', text: '修复同步失败问题' },
+          { type: 'fix', text: '提升上传速度' }
+        ]
+      }
+    ];
     
-    // 初始化
+    let currentCategory = 'all';
+    let currentPlugin = null;
+    
     document.addEventListener('DOMContentLoaded', () => {
-      loadCategories();
-      loadPlugins();
-      loadInstalled();
+      renderPlugins(plugins);
     });
     
-    // 切换标签页
-    function switchTab(tab) {
-      currentTab = tab;
-      
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab')[tab === 'explore' ? 0 : 1].classList.add('active');
-      
-      document.getElementById('exploreTab').style.display = tab === 'explore' ? 'block' : 'none';
-      document.getElementById('installedTab').style.display = tab === 'installed' ? 'block' : 'none';
-    }
-    
-    // 加载分类
-    async function loadCategories() {
-      try {
-        const res = await fetch(`${API_BASE}/categories`);
-        const data = await res.json();
-        
-        if (data.success) {
-          const container = document.getElementById('categories');
-          container.innerHTML = data.data.categories.map(cat => `
-            <div class="category ${cat.id === currentCategory ? 'active' : ''}" 
-                 onclick="selectCategory('${cat.id}')">
-              ${cat.icon} ${cat.name} (${cat.count})
-            </div>
-          `).join('');
-        }
-      } catch (error) {
-        console.error('加载分类失败:', error);
-      }
-    }
-    
-    // 选择分类
-    function selectCategory(category) {
-      currentCategory = category;
-      
-      document.querySelectorAll('.category').forEach(cat => {
-        cat.classList.toggle('active', cat.textContent.includes(category) || 
-          (category === 'all' && cat.textContent.includes('全部')));
-      });
-      
-      loadPlugins();
-    }
-    
-    // 处理搜索
-    function handleSearch(event) {
-      searchKeyword = event.target.value;
-      loadPlugins();
-    }
-    
-    // 处理排序
-    function handleSort() {
-      currentSort = document.getElementById('sortSelect').value;
-      loadPlugins();
-    }
-    
-    // 加载插件列表
-    async function loadPlugins() {
-      try {
-        let url = `${API_BASE}/plugins?category=${currentCategory}&sort=${currentSort}`;
-        if (searchKeyword) {
-          url += `&search=${encodeURIComponent(searchKeyword)}`;
-        }
-        
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.success) {
-          renderPlugins(data.data.plugins);
-        }
-      } catch (error) {
-        console.error('加载插件失败:', error);
-      }
-    }
-    
-    // 渲染插件
-    function renderPlugins(plugins) {
+    function renderPlugins(list) {
       const grid = document.getElementById('pluginsGrid');
       
-      if (plugins.length === 0) {
+      if (list.length === 0) {
         grid.innerHTML = `
-          <div class="empty-state" style="grid-column: 1/-1;">
-            <div class="empty-icon">🔍</div>
-            <div class="empty-title">未找到插件</div>
-            <p>试试其他关键词或分类</p>
+          <div class="empty" style="grid-column: 1/-1;">
+            <div class="empty-icon">🔌</div>
+            <div class="empty-text">没有找到相关插件</div>
           </div>
         `;
         return;
       }
       
-      grid.innerHTML = plugins.map(plugin => `
+      grid.innerHTML = list.map(plugin => `
         <div class="plugin-card">
           <div class="plugin-header">
             <div class="plugin-icon">${plugin.icon}</div>
             <div class="plugin-info">
-              <div class="plugin-name">
-                ${plugin.name}
-                ${plugin.builtin ? '<span class="plugin-badge builtin">内置</span>' : ''}
-                ${plugin.price > 0 ? '<span class="plugin-badge paid">付费</span>' : ''}
+              <div class="plugin-name">${plugin.name}</div>
+              <div class="plugin-version">
+                <span>${plugin.version}</span>
+                ${plugin.hasUpdate ? '<span class="update-badge">↻ 有更新</span>' : ''}
               </div>
-              <div class="plugin-author">by ${plugin.author}</div>
             </div>
           </div>
-          
-          <div class="plugin-description">${plugin.description}</div>
-          
-          <div class="plugin-tags">
-            ${plugin.tags.map(tag => `<span class="plugin-tag">${tag}</span>`).join('')}
-          </div>
-          
+          <div class="plugin-desc">${plugin.desc}</div>
           <div class="plugin-footer">
-            <div class="plugin-price ${plugin.price === 0 ? 'free' : ''}">
-              ${plugin.price === 0 ? '免费' : `${plugin.price} tokens/次`}
+            <div class="plugin-stats">
+              <span>📦 ${formatNumber(plugin.downloads)}</span>
+              <span>⭐ ${plugin.rating}</span>
             </div>
-            <button class="plugin-action ${installedPlugins.has(plugin.id) ? 'uninstall' : 'install'}"
-                    onclick="${installedPlugins.has(plugin.id) ? `uninstallPlugin('${plugin.id}')` : `installPlugin('${plugin.id}')`}">
-              ${installedPlugins.has(plugin.id) ? '卸载' : '安装'}
-            </button>
+            <div class="plugin-actions">
+              <button class="plugin-btn secondary" onclick="viewPluginDetail('${plugin.id}')">详情</button>
+              ${plugin.hasUpdate 
+                ? '<button class="plugin-btn warning" onclick="showUpdateModal(\'' + plugin.id + '\')">更新</button>'
+                : '<button class="plugin-btn secondary" onclick="disablePlugin(\'' + plugin.id + '\')">禁用</button>'
+              }
+            </div>
           </div>
         </div>
       `).join('');
     }
     
-    // 加载已安装插件
-    async function loadInstalled() {
-      try {
-        const res = await fetch(`${API_BASE}/installed`);
-        const data = await res.json();
-        
-        if (data.success) {
-          installedPlugins.clear();
-          data.data.plugins.forEach(p => {
-            installedPlugins.set(p.id, p);
-          });
-          
-          renderInstalled(data.data.plugins);
-        }
-      } catch (error) {
-        console.error('加载已安装插件失败:', error);
-      }
+    function formatNumber(num) {
+      if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+      return num;
     }
     
-    // 渲染已安装插件
-    function renderInstalled(plugins) {
-      const grid = document.getElementById('installedGrid');
-      const empty = document.getElementById('emptyInstalled');
+    function filterByCategory(category, btn) {
+      currentCategory = category;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       
-      if (plugins.length === 0) {
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        return;
+      let filtered = plugins;
+      if (category === 'update') {
+        filtered = plugins.filter(p => p.hasUpdate);
+      } else if (category !== 'all') {
+        filtered = plugins.filter(p => p.category === category);
       }
       
-      grid.style.display = 'grid';
-      empty.style.display = 'none';
+      renderPlugins(filtered);
+    }
+    
+    function viewPluginDetail(id) {
+      const plugin = plugins.find(p => p.id === id);
+      if (!plugin) return;
       
-      grid.innerHTML = plugins.map(plugin => `
-        <div class="installed-card">
-          <div class="installed-icon">${plugin.icon}</div>
-          <div class="installed-info">
-            <div class="installed-name">${plugin.name}</div>
-            <div class="installed-status">
-              <span class="status-dot ${plugin.enabled ? 'enabled' : 'disabled'}"></span>
-              ${plugin.enabled ? '已启用' : '已禁用'}
-            </div>
-          </div>
-          <button class="installed-toggle" onclick="togglePlugin('${plugin.id}', ${!plugin.enabled})">
-            ${plugin.enabled ? '禁用' : '启用'}
-          </button>
+      alert(`📦 ${plugin.name}\n\n${plugin.desc}\n\n功能特点：\n${plugin.features.map(f => '• ' + f).join('\n')}`);
+    }
+    
+    function showUpdateModal(id) {
+      const plugin = plugins.find(p => p.id === id);
+      if (!plugin) return;
+      
+      currentPlugin = plugin;
+      
+      document.getElementById('modalIcon').textContent = plugin.icon;
+      document.getElementById('modalName').textContent = plugin.name;
+      document.getElementById('modalVersion').textContent = `${plugin.version} → ${plugin.latestVersion}`;
+      
+      document.getElementById('updateList').innerHTML = plugin.updates.map(u => `
+        <div class="update-item ${u.type}">
+          <span>${u.type === 'add' ? '➕' : u.type === 'fix' ? '🔧' : '📝'}</span>
+          <span>${u.text}</span>
         </div>
       `).join('');
-    }
-    
-    // 安装插件
-    async function installPlugin(pluginId) {
-      try {
-        const res = await fetch(`${API_BASE}/install`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pluginId })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          alert('插件安装成功！');
-          loadInstalled();
-          loadPlugins();
-        } else {
-          alert(data.error || '安装失败');
-        }
-      } catch (error) {
-        console.error('安装失败:', error);
-        alert('安装失败，请重试');
-      }
-    }
-    
-    // 卸载插件
-    async function uninstallPlugin(pluginId) {
-      if (!confirm('确定要卸载这个插件吗？')) return;
       
-      try {
-        const res = await fetch(`${API_BASE}/uninstall`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pluginId })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          alert('插件卸载成功！');
-          loadInstalled();
-          loadPlugins();
-        } else {
-          alert(data.error || '卸载失败');
+      document.getElementById('progressSection').classList.remove('show');
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('updateBtn').textContent = '立即更新';
+      document.getElementById('updateBtn').disabled = false;
+      
+      document.getElementById('updateModal').classList.add('show');
+    }
+    
+    function closeUpdateModal() {
+      document.getElementById('updateModal').classList.remove('show');
+    }
+    
+    function startUpdate() {
+      if (!currentPlugin) return;
+      
+      const btn = document.getElementById('updateBtn');
+      const progress = document.getElementById('progressSection');
+      
+      btn.disabled = true;
+      btn.textContent = '更新中...';
+      progress.classList.add('show');
+      
+      let percent = 0;
+      const steps = [
+        { percent: 30, text: '正在下载更新包...' },
+        { percent: 60, text: '正在安装...' },
+        { percent: 90, text: '正在配置...' },
+        { percent: 100, text: '更新完成！' }
+      ];
+      
+      let stepIndex = 0;
+      
+      function nextStep() {
+        if (stepIndex >= steps.length) {
+          btn.textContent = '✓ 已更新';
+          setTimeout(() => {
+            closeUpdateModal();
+            currentPlugin.hasUpdate = false;
+            currentPlugin.version = currentPlugin.latestVersion;
+            renderPlugins(getFilteredPlugins());
+          }, 1000);
+          return;
         }
-      } catch (error) {
-        console.error('卸载失败:', error);
-        alert('卸载失败，请重试');
+        
+        const step = steps[stepIndex];
+        document.getElementById('progressFill').style.width = step.percent + '%';
+        document.getElementById('progressText').textContent = step.text;
+        
+        stepIndex++;
+        setTimeout(nextStep, 800);
+      }
+      
+      nextStep();
+    }
+    
+    function disablePlugin(id) {
+      const plugin = plugins.find(p => p.id === id);
+      if (!plugin) return;
+      
+      if (confirm(`确定要禁用 ${plugin.name} 吗？\n\n禁用后该插件将不再工作。`)) {
+        alert(`⚠️ ${plugin.name} 已禁用`);
       }
     }
     
-    // 切换插件状态
-    async function togglePlugin(pluginId, enabled) {
-      try {
-        const res = await fetch(`${API_BASE}/toggle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pluginId, enabled })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          loadInstalled();
-        } else {
-          alert(data.error || '操作失败');
-        }
-      } catch (error) {
-        console.error('操作失败:', error);
+    function getFilteredPlugins() {
+      if (currentCategory === 'update') {
+        return plugins.filter(p => p.hasUpdate);
+      } else if (currentCategory === 'all') {
+        return plugins;
+      } else {
+        return plugins.filter(p => p.category === currentCategory);
       }
     }
+    
+    // 点击弹窗外部关闭
+    document.getElementById('updateModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('updateModal')) {
+        closeUpdateModal();
+      }
+    });
   </script>
 </body>
 </html>
