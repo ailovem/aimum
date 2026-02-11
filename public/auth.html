@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - 登录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .logo h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    .logo p {
+      color: var(--text-dim);
+    }
+    
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 40px;
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 30px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 4px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255,255,255,0.08);
+    }
+    
+    input::placeholder {
+      color: var(--text-dim);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    
+    .verify-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .verify-row input {
+      flex: 1;
+    }
+    
+    .verify-btn {
+      padding: 14px 20px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    
+    .verify-btn:hover {
+      background: #5a67d8;
+    }
+    
+    .verify-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .message.error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      display: block;
+    }
+    
+    .message.success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      display: block;
+    }
+    
+    .user-info {
+      display: none;
+    }
+    
+    .user-info.show {
+      display: block;
+    }
+    
+    .user-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+    }
+    
+    .user-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .user-phone {
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+    
+    .token-display {
+      background: rgba(102, 126, 234, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .token-label {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .token-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .plans {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .plan {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .plan:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .plan.selected {
+      border-color: var(--primary);
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .plan-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .plan-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .plan-price span {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>🦁</h1>
+      <p>AImum - 一人公司 AI 操作系统</p>
+    </div>
+    
+    <!-- 登录表单 -->
+    <div class="card" id="authCard">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">登录</button>
+        <button class="tab" onclick="switchTab('register')">注册</button>
+      </div>
+      
+      <div id="message" class="message"></div>
+      
+      <!-- 登录表单 -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>手机号</label>
+          <input type="tel" id="loginPhone" placeholder="请输入手机号" required>
+        </div>
+        
+        <div class="form-group verify-row">
+          <input type="text" id="loginCode" placeholder="验证码" required>
+          <button type="button" class="verify-btn" onclick="sendCode('login')">获取验证码</button>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">登录</button>
+      </form>
+      
+      <!-- 注册表单 -->
+      <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>手机号</label>
+          <input type="tel" id="regPhone" placeholder="请输入手机号" required>
+        </div>
+        
+        <div class="form-group">
+          <label>昵称</label>
+          <input type="text" id="regNickname" placeholder="请输入昵称（可选）">
+        </div>
+        
+        <div class="form-group verify-row">
+          <input type="text" id="regCode" placeholder="验证码" required>
+          <button type="button" class="verify-btn" onclick="sendCode('register')">获取验证码</button>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">注册并登录</button>
+      </form>
+      
+      <div class="footer">
+        <p>登录即表示同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a></p>
+      </div>
+    </div>
+    
+    <!-- 用户信息 -->
+    <div class="card user-info" id="userCard">
+      <div class="user-card">
+        <div class="user-avatar">🦁</div>
+        <div class="user-name" id="userName">用户</div>
+        <div class="user-phone" id="userPhone">+86</div>
+      </div>
+      
+      <div class="token-display">
+        <span class="token-label">剩余 Tokens</span>
+        <span class="token-value" id="userTokens">0</span>
+      </div>
+      
+      <div class="plans">
+        <div class="plan" onclick="selectPlan('free')">
+          <div class="plan-name">免费版</div>
+          <div class="plan-price">¥0<span>/月</span></div>
+        </div>
+        <div class="plan selected" onclick="selectPlan('pro')">
+          <div class="plan-name">专业版</div>
+          <div class="plan-price">¥29<span>/月</span></div>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" onclick="logout()">退出登录</button>
+    </div>
+  </div>
+  
+  <script>
+    let currentTab = 'login';
+    let countdownTimer = null;
+    
+    // API 地址
+    const API_BASE = '/api/auth';
+    
+    // 切换标签
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab')[tab === 'login' ? 0 : 1].classList.add('active');
+      
+      document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+      
+      hideMessage();
+    }
+    
+    // 显示消息
+    function showMessage(text, type = 'error') {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = 'message ' + type;
+    }
+    
+    // 隐藏消息
+    function hideMessage() {
+      document.getElementById('message').className = 'message';
+    }
+    
+    // 发送验证码
+    async function sendCode(type) {
+      const phone = type === 'login' 
+        ? document.getElementById('loginPhone').value
+        : document.getElementById('regPhone').value;
+      
+      if (!phone) {
+        showMessage('请输入手机号');
+        return;
+      }
+      
+      // 验证手机号
+      if (!/^1\d{10}$/.test(phone) && !/^\d{10,15}$/.test(phone)) {
+        showMessage('手机号格式不正确');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE}/send-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          showMessage(`验证码已发送${data.code ? ': ' + data.code : ''}`, 'success');
+          
+          // 开始倒计时
+          startCountdown(type);
+        } else {
+          showMessage(data.error);
+        }
+      } catch (error) {
+        showMessage('发送失败，请重试');
+      }
+    }
+    
+    // 倒计时
+    function startCountdown(type) {
+      const btn = document.querySelector(type === 'login' 
+        ? '#loginForm .verify-btn'
+        : '#registerForm .verify-btn');
+      
+      let count = 60;
+      btn.disabled = true;
+      btn.textContent = `${count}s`;
+      
+      countdownTimer = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(countdownTimer);
+          btn.disabled = false;
+          btn.textContent = '获取验证码';
+        } else {
+          btn.textContent = `${count}s`;
+        }
+      }, 1000);
+    }
+    
+    // 登录
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const phone = document.getElementById('loginPhone').value;
+      const code = document.getElementById('loginCode').value;
+      
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, code })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          localStorage.setItem('aimum_token', data.data.token);
+          localStorage.setItem('aimum_user', JSON.stringify(data.data.user));
+          showUserInfo(data.data.user);
+        } else {
+          showMessage(data.error);
+        }
+      } catch (error) {
+        showMessage('登录失败，请重试');
+      }
+    }
+    
+    // 注册
+    async function handleRegister(e) {
+      e.preventDefault();
+      
+      const phone = document.getElementById('regPhone').value;
+      const code = document.getElementById('regCode').value;
+      const nickname = document.getElementById('regNickname').value;
+      
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, code, nickname })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          localStorage.setItem('aimum_token', data.data.token);
+          localStorage.setItem('aimum_user', JSON.stringify(data.data.user));
+          showUserInfo(data.data.user);
+        } else {
+          showMessage(data.error);
+        }
+      } catch (error) {
+        showMessage('注册失败，请重试');
+      }
+    }
+    
+    // 显示用户信息
+    function showUserInfo(user) {
+      document.getElementById('authCard').classList.add('hidden');
+      document.getElementById('userCard').classList.add('show');
+      
+      document.getElementById('userName').textContent = user.nickname;
+      document.getElementById('userPhone').textContent = user.phone;
+      document.getElementById('userTokens').textContent = user.tokens;
+    }
+    
+    // 选择套餐
+    function selectPlan(plan) {
+      document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+    }
+    
+    // 退出登录
+    function logout() {
+      localStorage.removeItem('aimum_token');
+      localStorage.removeItem('aimum_user');
+      
+      document.getElementById('authCard').classList.remove('hidden');
+      document.getElementById('userCard').classList.remove('show');
+      
+      // 清空表单
+      document.getElementById('loginPhone').value = '';
+      document.getElementById('loginCode').value = '';
+      document.getElementById('regPhone').value = '';
+      document.getElementById('regCode').value = '';
+      document.getElementById('regNickname').value = '';
+    }
+    
+    // 页面加载时检查登录状态
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('aimum_token');
+      const userStr = localStorage.getItem('aimum_user');
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          showUserInfo(user);
+        } catch (e) {
+          logout();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
