@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AImum - AI 操作系统</title>
-  <meta name="theme-color" content="#667eea">
-  <meta name="description" content="一个人活成一个团队 - AI 操作系统">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f0f23">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>AImum - 一人公司 AI 操作系统</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
@@ -16,11 +17,13 @@
       --primary-dark: #5a67d8;
       --bg: #0f0f23;
       --card: #1a1a2e;
+      --card-hover: #252542;
       --text: #e2e8f0;
       --text-dim: #a0aec0;
-      --success: #48bb78;
-      --warning: #ed8936;
-      --danger: #f56565;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.1);
     }
     
     body {
@@ -31,1015 +34,907 @@
       overflow-x: hidden;
     }
     
-    /* 启动页 */
-    #splash {
+    /* 侧边栏 */
+    .sidebar {
       position: fixed;
-      top: 0;
       left: 0;
-      right: 0;
+      top: 0;
       bottom: 0;
-      background: var(--bg);
+      width: 260px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s;
+      z-index: 100;
+      transition: transform 0.3s ease;
     }
     
-    #splash.hidden {
-      opacity: 0;
-      pointer-events: none;
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
     }
     
     .logo {
-      font-size: 72px;
-      margin-bottom: 24px;
-      animation: pulse 2s infinite;
-    }
-    
-    .tagline {
-      font-size: 18px;
-      color: var(--text-dim);
-      text-align: center;
-      padding: 0 40px;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    
-    /* 主界面 */
-    #app {
-      display: none;
-      min-height: 100vh;
-      padding-bottom: 80px;
-    }
-    
-    #app.visible {
-      display: block;
-    }
-    
-    /* 头部 */
-    header {
-      background: linear-gradient(135deg, var(--primary), #764ba2);
-      padding: 20px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    header h1 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-    
-    .token-display {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.15);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 14px;
-    }
-    
-    .token-icon { font-size: 16px; }
-    
-    /* 导航 */
-    nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--card);
-      display: flex;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      z-index: 100;
-    }
-    
-    nav a {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 12px;
-      transition: color 0.2s;
-    }
-    
-    nav a.active {
-      color: var(--primary);
-    }
-    
-    nav a .icon {
-      font-size: 24px;
-      display: block;
-      margin-bottom: 4px;
-    }
-    
-    /* 页面容器 */
-    .page {
-      display: none;
-      padding: 20px;
-    }
-    
-    .page.active {
-      display: block;
-    }
-    
-    /* 首页 */
-    .hero {
-      text-align: center;
-      padding: 40px 20px;
-    }
-    
-    .hero h2 {
-      font-size: 28px;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--primary), #f093fb);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .hero p {
-      color: var(--text-dim);
-      margin-bottom: 24px;
-      line-height: 1.6;
-    }
-    
-    /* 部门卡片 */
-    .dept-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-top: 24px;
-    }
-    
-    .dept-card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .dept-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
-    }
-    
-    .dept-card .icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-    
-    .dept-card h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    
-    .dept-card p {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-    
-    /* AI 对话页 */
-    #chat-container {
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 180px);
-      max-height: 600px;
-    }
-    
-    #chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 0;
-    }
-    
-    .message {
-      margin-bottom: 16px;
-      padding: 12px 16px;
-      border-radius: 16px;
-      max-width: 85%;
-      line-height: 1.5;
-      animation: slideIn 0.3s ease;
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .message.user {
-      background: var(--primary);
-      margin-left: auto;
-      border-bottom-right-radius: 4px;
-    }
-    
-    .message.ai {
-      background: var(--card);
-      margin-right: auto;
-      border-bottom-left-radius: 4px;
-    }
-    
-    #chat-input-container {
-      display: flex;
       gap: 12px;
-      padding: 16px 0;
+      margin-bottom: 20px;
     }
     
-    #chat-input {
-      flex: 1;
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 24px;
-      padding: 14px 20px;
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
+    .logo-icon {
+      font-size: 36px;
     }
     
-    #chat-input:focus {
-      border-color: var(--primary);
-    }
-    
-    #send-btn {
-      background: var(--primary);
-      border: none;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
+    .logo-text {
       font-size: 20px;
-      cursor: pointer;
-      transition: transform 0.2s;
+      font-weight: 700;
     }
     
-    #send-btn:active {
-      transform: scale(0.95);
+    .logo-desc {
+      font-size: 12px;
+      color: var(--text-dim);
     }
     
-    /* 插件市场 */
-    .plugin-list {
+    /* 用户信息 */
+    .user-info {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 12px;
-    }
-    
-    .plugin-card {
-      background: var(--card);
+      padding: 12px;
+      background: rgba(102, 126, 234, 0.1);
       border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      gap: 16px;
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.05);
+      margin-top: 16px;
     }
     
-    .plugin-icon {
-      font-size: 40px;
-      width: 48px;
-      height: 48px;
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(102, 126, 234, 0.1);
-      border-radius: 12px;
+      font-size: 18px;
     }
     
-    .plugin-info {
+    .user-details {
       flex: 1;
+      min-width: 0;
     }
     
-    .plugin-info h4 {
-      font-size: 16px;
+    .user-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .user-tokens {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* 导航菜单 */
+    .nav-menu {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .nav-section {
+      margin-bottom: 24px;
+    }
+    
+    .nav-section-title {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding: 0 12px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text);
+      text-decoration: none;
       margin-bottom: 4px;
     }
     
-    .plugin-info p {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-bottom: 8px;
+    .nav-item:hover {
+      background: var(--card-hover);
     }
     
-    .plugin-price {
+    .nav-item.active {
+      background: rgba(102, 126, 234, 0.2);
+      color: var(--primary);
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .nav-label {
+      flex: 1;
       font-size: 14px;
-      color: var(--success);
+    }
+    
+    .nav-badge {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    
+    /* 底部设置 */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .nav-item.settings {
+      color: var(--text-dim);
+    }
+    
+    /* 主内容区 */
+    .main {
+      margin-left: 260px;
+      min-height: 100vh;
+    }
+    
+    .header {
+      padding: 20px 30px;
+      background: rgba(26, 26, 46, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .header-title {
+      font-size: 24px;
       font-weight: 600;
     }
     
-    .install-btn {
-      background: var(--primary);
-      border: none;
-      color: white;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      cursor: pointer;
-      align-self: center;
+    .header-actions {
+      display: flex;
+      gap: 12px;
     }
     
-    /* 我的页面 */
-    .profile-section {
+    .header-btn {
+      padding: 10px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .header-btn:hover {
+      background: var(--card-hover);
+    }
+    
+    .header-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .header-btn.primary:hover {
+      background: var(--primary-dark);
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    /* 首页卡片网格 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .stat-icon.tokens { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon.chat { background: linear-gradient(135deg, #10b981, #059669); }
+    .stat-icon.plugins { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .stat-icon.storage { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    
+    .stat-info {
+      flex: 1;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    /* 功能卡片 */
+    .features-section {
+      margin-bottom: 30px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .section-link {
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .feature-card {
       background: var(--card);
       border-radius: 16px;
       padding: 24px;
       text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: var(--text);
+    }
+    
+    .feature-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+    
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    
+    .feature-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    /* 快速开始 */
+    .quick-start {
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .quick-start-title {
+      font-size: 24px;
+      font-weight: 600;
       margin-bottom: 20px;
     }
     
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), #764ba2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      margin: 0 auto 16px;
+    .quick-start-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
     }
     
-    .token-balance {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--primary);
-      margin: 16px 0;
-    }
-    
-    .menu-list {
-      background: var(--card);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    
-    .menu-item {
-      display: flex;
-      align-items: center;
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+    .quick-start-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px;
       cursor: pointer;
+      transition: all 0.2s;
     }
     
-    .menu-item:last-child {
+    .quick-start-item:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+    
+    .quick-start-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .quick-start-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .quick-start-desc {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    
+    /* 最近活动 */
+    .activity-section {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    
+    .activity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .activity-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .activity-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .activity-item:last-child {
       border-bottom: none;
     }
     
-    .menu-item .icon {
-      font-size: 24px;
-      margin-right: 16px;
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
     }
     
-    .menu-item span {
+    .activity-icon.chat { background: rgba(102, 126, 234, 0.2); }
+    .activity-icon.plugin { background: rgba(245, 158, 11, 0.2); }
+    .activity-icon.token { background: rgba(16, 185, 129, 0.2); }
+    
+    .activity-info {
       flex: 1;
     }
     
-    .menu-item .arrow {
-      color: var(--text-dim);
-    }
-    
-    /* 登录弹窗 */
-    #login-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-    
-    #login-modal.visible {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 32px;
-      width: 100%;
-      max-width: 360px;
-    }
-    
-    .modal-content h2 {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    
-    .input-group {
-      margin-bottom: 16px;
-    }
-    
-    .input-group input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text);
-      font-size: 16px;
-    }
-    
-    .btn-primary {
-      width: 100%;
-      background: linear-gradient(135deg, var(--primary), #764ba2);
-      border: none;
-      color: white;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-    
-    /* 模型选择 */
-    .model-selector {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-    }
-    
-    .model-chip {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: var(--text-dim);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-    
-    .model-chip.active {
-      background: var(--primary);
-      color: white;
-    }
-    
-    /* 加载动画 */
-    .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 8px 0;
-    }
-    
-    .typing-indicator span {
-      width: 8px;
-      height: 8px;
-      background: var(--text-dim);
-      border-radius: 50%;
-      animation: bounce 1.4s infinite;
-    }
-    
-    .typing-indicator span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .typing-indicator span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-8px); }
-    }
-    
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--card);
-      padding: 12px 24px;
-      border-radius: 24px;
+    .activity-text {
       font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 2000;
+      margin-bottom: 4px;
     }
     
-    .toast.visible {
-      opacity: 1;
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-dim);
     }
     
-    .toast.success {
-      border: 1px solid var(--success);
+    /* 移动端菜单按钮 */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      width: 56px;
+      height: 56px;
+      background: var(--primary);
+      border-radius: 50%;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 200;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
     }
     
-    .toast.error {
-      border: 1px solid var(--danger);
+    /* 响应式 */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main {
+        margin-left: 0;
+      }
+      
+      .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .header {
+        padding-left: 70px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .content {
+        padding: 20px;
+      }
+      
+      .stat-card {
+        padding: 20px;
+      }
+      
+      .stat-value {
+        font-size: 24px;
+      }
+    }
+    
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--card-hover);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
     }
   </style>
 </head>
 <body>
-  <!-- 启动页 -->
-  <div id="splash">
-    <div class="logo">🦁</div>
-    <h1 style="margin-bottom: 16px; font-size: 32px;">AImum</h1>
-    <p class="tagline">一个人活成一个团队<br>AI 操作系统</p>
-  </div>
+  <!-- 侧边栏 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🦁</span>
+        <div>
+          <div class="logo-text">AImum</div>
+          <div class="logo-desc">一人公司 AI 操作系统</div>
+        </div>
+      </div>
+      
+      <div class="user-info" id="userInfo" onclick="navigateTo('/tokens.html')">
+        <div class="user-avatar">👤</div>
+        <div class="user-details">
+          <div class="user-name" id="userName">登录后使用</div>
+          <div class="user-tokens">
+            <span>💰</span>
+            <span id="userTokens">-- tokens</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="nav-menu">
+      <div class="nav-section">
+        <div class="nav-section-title">核心功能</div>
+        
+        <a href="/chat.html" class="nav-item active" data-page="chat">
+          <span class="nav-icon">💬</span>
+          <span class="nav-label">AI 对话</span>
+        </a>
+        
+        <a href="/tokens.html" class="nav-item" data-page="tokens">
+          <span class="nav-icon">💎</span>
+          <span class="nav-label">Token 管理</span>
+        </a>
+        
+        <a href="/plugins.html" class="nav-item" data-page="plugins">
+          <span class="nav-icon">🧩</span>
+          <span class="nav-label">插件市场</span>
+          <span class="nav-badge">5</span>
+        </a>
+        
+        <a href="/progress.html" class="nav-item" data-page="progress">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">进度追踪</span>
+        </a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">快捷入口</div>
+        
+        <div class="nav-item" onclick="quickAction('newChat')">
+          <span class="nav-icon">➕</span>
+          <span class="nav-label">新建对话</span>
+        </div>
+        
+        <div class="nav-item" onclick="quickAction('converter')">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">文件转换</span>
+        </div>
+        
+        <div class="nav-item" onclick="quickAction('code')">
+          <span class="nav-icon">👨‍💻</span>
+          <span class="nav-label">代码助手</span>
+        </div>
+        
+        <div class="nav-item" onclick="quickAction('writer')">
+          <span class="nav-icon">✍️</span>
+          <span class="nav-label">写作助手</span>
+        </div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">工具</div>
+        
+        <a href="https://lumingjiankang.netlify.app/" target="_blank" class="nav-item">
+          <span class="nav-icon">🔧</span>
+          <span class="nav-label">文件转换专家</span>
+        </a>
+        
+        <a href="https://github.com/ailovem/aimum" target="_blank" class="nav-item">
+          <span class="nav-icon">🔗</span>
+          <span class="nav-label">GitHub 仓库</span>
+        </a>
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <a href="/auth.html" class="nav-item settings" id="authLink">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label" id="authLabel">登录 / 注册</span>
+      </a>
+    </div>
+  </aside>
   
-  <!-- 主应用 -->
-  <div id="app">
-    <header>
-      <h1>🦁 AImum</h1>
-      <div class="token-display" onclick="showPage('profile')">
-        <span class="token-icon">🪙</span>
-        <span id="token-count">0</span> 令牌
+  <!-- 主内容区 -->
+  <main class="main">
+    <header class="header">
+      <h1 class="header-title" id="pageTitle">🏠 首页</h1>
+      <div class="header-actions">
+        <button class="header-btn" onclick="openExternal('https://github.com/ailovem/aimum')">
+          ⭐ GitHub
+        </button>
+        <button class="header-btn primary" onclick="navigateTo('/chat.html')">
+          ➕ 新建对话
+        </button>
       </div>
     </header>
     
-    <!-- 首页：部门选择 -->
-    <div id="page-home" class="page active">
-      <div class="hero">
-        <h2>选择你的 AI 部门</h2>
-        <p>搭积木一样搭建你的 AI 公司<br>安装插件，解锁能力</p>
-      </div>
-      
-      <div class="dept-grid" id="dept-grid">
-        <!-- 动态生成 -->
-      </div>
-    </div>
-    
-    <!-- AI 对话页 -->
-    <div id="page-chat" class="page">
-      <div class="model-selector" id="model-selector">
-        <!-- 动态生成 -->
-      </div>
-      
-      <div id="chat-container">
-        <div id="chat-messages">
-          <div class="message ai">
-            你好！我是 AImum 🦁<br><br>
-            选择一个部门开始对话，或者直接问我任何问题。
+    <div class="content" id="mainContent">
+      <!-- 统计数据 -->
+      <div class="dashboard-grid">
+        <div class="stat-card" onclick="navigateTo('/tokens.html')">
+          <div class="stat-icon tokens">💎</div>
+          <div class="stat-info">
+            <div class="stat-value" id="tokenBalance">--</div>
+            <div class="stat-label">剩余 Tokens</div>
           </div>
         </div>
         
-        <div id="chat-input-container">
-          <input type="text" id="chat-input" placeholder="输入消息..." />
-          <button id="send-btn">➤</button>
+        <div class="stat-card" onclick="navigateTo('/chat.html')">
+          <div class="stat-icon chat">💬</div>
+          <div class="stat-info">
+            <div class="stat-value" id="chatCount">--</div>
+            <div class="stat-label">对话次数</div>
+          </div>
         </div>
-      </div>
-    </div>
-    
-    <!-- 插件市场 -->
-    <div id="page-plugins" class="page">
-      <h2 style="margin-bottom: 20px;">🛒 插件市场</h2>
-      <div class="plugin-list" id="plugin-list">
-        <!-- 动态生成 -->
-      </div>
-    </div>
-    
-    <!-- 我的页面 -->
-    <div id="page-profile" class="page">
-      <div class="profile-section">
-        <div class="avatar">👤</div>
-        <h3 id="user-name">游客</h3>
-        <div class="token-balance">
-          <span id="balance">0</span> 🪙
+        
+        <div class="stat-card" onclick="navigateTo('/plugins.html')">
+          <div class="stat-icon plugins">🧩</div>
+          <div class="stat-info">
+            <div class="stat-value" id="pluginCount">5</div>
+            <div class="stat-label">已安装插件</div>
+          </div>
         </div>
-        <button class="btn-primary" onclick="showToast('令狐充coming soon...', 'success')">
-          令狐充 ⚡
-        </button>
+        
+        <div class="stat-card">
+          <div class="stat-icon storage">📁</div>
+          <div class="stat-info">
+            <div class="stat-value">📄</div>
+            <div class="stat-label">文件管理</div>
+          </div>
+        </div>
       </div>
       
-      <div class="menu-list">
-        <div class="menu-item" onclick="showToast('我的插件coming soon...', 'success')">
-          <span class="icon">🧩</span>
-          <span>我的插件</span>
-          <span class="arrow">›</span>
+      <!-- 快速开始 -->
+      <div class="quick-start">
+        <h2 class="quick-start-title">🚀 快速开始</h2>
+        <div class="quick-start-grid">
+          <div class="quick-start-item" onclick="quickAction('newChat')">
+            <div class="quick-start-icon">💬</div>
+            <div class="quick-start-name">开始对话</div>
+            <div class="quick-start-desc">与 AI 助手开始新的对话</div>
+          </div>
+          
+          <div class="quick-start-item" onclick="quickAction('converter')">
+            <div class="quick-start-icon">📄</div>
+            <div class="quick-start-name">文件转换</div>
+            <div class="quick-start-desc">PDF/Word/Excel 互转</div>
+          </div>
+          
+          <div class="quick-start-item" onclick="quickAction('code')">
+            <div class="quick-start-icon">👨‍💻</div>
+            <div class="quick-start-name">代码助手</div>
+            <div class="quick-start-desc">写代码、调试、优化</div>
+          </div>
+          
+          <div class="quick-start-item" onclick="quickAction('writer')">
+            <div class="quick-start-icon">✍️</div>
+            <div class="quick-start-name">写作助手</div>
+            <div class="quick-start-desc">文章、文案、翻译</div>
+          </div>
         </div>
-        <div class="menu-item" onclick="showToast('使用记录coming soon...', 'success')">
-          <span class="icon">📊</span>
-          <span>使用记录</span>
-          <span class="arrow">›</span>
+      </div>
+      
+      <!-- 功能入口 -->
+      <div class="features-section">
+        <div class="section-header">
+          <h2 class="section-title">🧩 精选插件</h2>
+          <span class="section-link" onclick="navigateTo('/plugins.html')">查看全部 →</span>
         </div>
-        <div class="menu-item" onclick="showToast('设置coming soon...', 'success')">
-          <span class="icon">⚙️</span>
-          <span>设置</span>
-          <span class="arrow">›</span>
+        
+        <div class="features-grid">
+          <a href="#" class="feature-card" onclick="usePlugin('file-converter')">
+            <div class="feature-icon">📄</div>
+            <div class="feature-name">文件转换专家</div>
+            <div class="feature-desc">PDF/Word/Excel 图片格式互转</div>
+          </a>
+          
+          <a href="#" class="feature-card" onclick="usePlugin('image-ocr')">
+            <div class="feature-icon">🔍</div>
+            <div class="feature-name">OCR 文字识别</div>
+            <div class="feature-desc">图片文字提取，支持多语言</div>
+          </a>
+          
+          <a href="#" class="feature-card" onclick="usePlugin('web-search')">
+            <div class="feature-icon">🌐</div>
+            <div class="feature-name">网络搜索</div>
+            <div class="feature-desc">实时网络搜索，获取最新信息</div>
+          </a>
+          
+          <a href="#" class="feature-card" onclick="usePlugin('calculator')">
+            <div class="feature-icon">🧮</div>
+            <div class="feature-name">计算器</div>
+            <div class="feature-desc">数学计算、汇率换算</div>
+          </a>
         </div>
-        <div class="menu-item" onclick="logout()">
-          <span class="icon">🚪</span>
-          <span>退出登录</span>
-          <span class="arrow">›</span>
+      </div>
+      
+      <!-- 最近活动 -->
+      <div class="activity-section">
+        <div class="activity-header">
+          <h2 class="activity-title">📋 最近活动</h2>
+        </div>
+        
+        <div class="activity-list" id="activityList">
+          <div class="activity-item">
+            <div class="activity-icon chat">🦁</div>
+            <div class="activity-info">
+              <div class="activity-text">欢迎使用 AImum！开始你的 AI 助手之旅</div>
+              <div class="activity-time">现在</div>
+            </div>
+          </div>
+          
+          <div class="activity-item">
+            <div class="activity-icon plugin">🧩</div>
+            <div class="activity-info">
+              <div class="activity-text">已预装 5 个插件：文件转换、OCR、网络搜索、计算器、代码运行器</div>
+              <div class="activity-time">系统初始化</div>
+            </div>
+          </div>
+          
+          <div class="activity-item">
+            <div class="activity-icon token">💎</div>
+            <div class="activity-info">
+              <div class="activity-text">新用户注册即送 100 tokens</div>
+              <div class="activity-time">系统初始化</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
-    <!-- 底部导航 -->
-    <nav>
-      <a href="#" onclick="showPage('home')" class="active" data-page="home">
-        <span class="icon">🏠</span>
-        首页
-      </a>
-      <a href="#" onclick="showPage('chat')" data-page="chat">
-        <span class="icon">🤖</span>
-        AI 对话
-      </a>
-      <a href="#" onclick="showPage('plugins')" data-page="plugins">
-        <span class="icon">🛒</span>
-        市场
-      </a>
-      <a href="#" onclick="showPage('profile')" data-page="profile">
-        <span class="icon">👤</span>
-        我的
-      </a>
-    </nav>
-  </div>
+  </main>
   
-  <!-- 登录弹窗 -->
-  <div id="login-modal">
-    <div class="modal-content">
-      <h2>🔐 登录 AImum</h2>
-      <form id="login-form">
-        <div class="input-group">
-          <input type="tel" id="phone" placeholder="手机号" required />
-        </div>
-        <div class="input-group">
-          <input type="password" id="password" placeholder="密码" />
-        </div>
-        <button type="submit" class="btn-primary">
-          获取验证码
-        </button>
-      </form>
-      <p style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--text-dim);">
-        登录即表示同意<a href="#" style="color: var(--primary);">用户协议</a>
-      </p>
-    </div>
-  </div>
-  
-  <!-- Toast -->
-  <div id="toast" class="toast"></div>
+  <!-- 移动端菜单按钮 -->
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
   
   <script>
-    // ==================== 状态管理 ====================
-    const state = {
-      user: null,
-      tokens: 0,
-      currentModel: 'deepseek',
-      currentDept: null,
-      messages: [],
-      installedPlugins: []
-    };
+    // API 地址
+    const API_AUTH = '/api/auth';
+    const API_TOKENS = '/api/tokens';
+    const API_PLUGINS = '/api/plugins';
     
-    const models = [
-      { id: 'deepseek', name: 'DeepSeek', icon: '🌊' },
-      { id: 'minimax', name: 'MiniMax', icon: '⚡' },
-      { id: 'claude', name: 'Claude', icon: '�️️' }
-    ];
+    // 状态
+    let currentUser = null;
+    let isLoggedIn = false;
     
-    const departments = [
-      { id: 'sales', name: '销售部', icon: '💼', desc: '获客、跟进、转化' },
-      { id: 'marketing', name: '市场部', icon: '📢', desc: '内容、投放、品牌' },
-      { id: 'finance', name: '财务部', icon: '💰', desc: '记账、报表、风控' },
-      { id: 'admin', name: '行政部', icon: '📋', desc: '日程、提醒、协作' },
-      { id: 'tech', name: '技术部', icon: '💻', desc: '开发、运维、部署' },
-      { id: 'custom', name: '自定义', icon: '🔧', desc: '自定义 AI 能力' }
-    ];
-    
-    const plugins = [
-      {
-        id: 'wechat',
-        name: '微信助手',
-        icon: '💬',
-        desc: '自动回复、消息管理、客户跟进',
-        price: '免费',
-        dept: 'sales'
-      },
-      {
-        id: 'content',
-        name: '内容生成器',
-        icon: '✍️',
-        desc: '小红书、抖音、公众号文案',
-        price: '¥9.9/月',
-        dept: 'marketing'
-      },
-      {
-        id: 'calendar',
-        name: '智能日历',
-        icon: '📅',
-        desc: '自动排期、提醒、行程管理',
-        price: '免费',
-        dept: 'admin'
-      },
-      {
-        id: 'invoice',
-        name: '发票助手',
-        icon: '🧾',
-        desc: '发票识别、记账、对账',
-        price: '¥5/月',
-        dept: 'finance'
-      },
-      {
-        id: 'deploy',
-        name: '一键部署',
-        icon: '🚀',
-        desc: 'GitHub、Vercel、Netlify',
-        price: '¥19/月',
-        dept: 'tech'
-      }
-    ];
-    
-    // ==================== 初始化 ====================
+    // 初始化
     document.addEventListener('DOMContentLoaded', () => {
-      // 显示启动页 2 秒后进入
-      setTimeout(() => {
-        document.getElementById('splash').classList.add('hidden');
-        document.getElementById('app').classList.add('visible');
-        initApp();
-      }, 2000);
+      checkLogin();
+      initSidebar();
+      initNavigation();
     });
     
-    function initApp() {
-      renderDepartments();
-      renderPlugins();
-      renderModelSelector();
+    // 检查登录状态
+    async function checkLogin() {
+      const token = localStorage.getItem('aimum_token');
+      const userStr = localStorage.getItem('aimum_user');
       
-      // 检查登录状态
-      const savedUser = localStorage.getItem('aimum_user');
-      if (savedUser) {
-        state.user = JSON.parse(savedUser);
-        state.tokens = parseInt(localStorage.getItem('aimum_tokens') || '20');
-        updateTokenDisplay();
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          currentUser = user;
+          isLoggedIn = true;
+          
+          // 更新 UI
+          document.getElementById('userName').textContent = user.nickname || '用户';
+          document.getElementById('userTokens').textContent = `${user.tokens || 0} tokens`;
+          document.getElementById('authLabel').textContent = '退出登录';
+          document.getElementById('authLink').onclick = logout;
+          
+          // 加载用户数据
+          loadUserData();
+        } catch (e) {
+          console.error('解析用户数据失败:', e);
+        }
       } else {
-        // 未登录，显示登录弹窗
-        document.getElementById('login-modal').classList.add('visible');
+        document.getElementById('authLink').onclick = () => window.location.href = '/auth.html';
       }
-      
-      // 绑定事件
-      document.getElementById('chat-form')?.addEventListener('submit', sendMessage);
-      document.getElementById('send-btn').addEventListener('click', sendMessage);
-      document.getElementById('chat-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-      });
-      document.getElementById('login-form').addEventListener('submit', handleLogin);
     }
     
-    // ==================== 渲染函数 ====================
-    function renderDepartments() {
-      const grid = document.getElementById('dept-grid');
-      grid.innerHTML = departments.map(dept => `
-        <div class="dept-card" onclick="selectDept('${dept.id}')">
-          <div class="icon">${dept.icon}</div>
-          <h3>${dept.name}</h3>
-          <p>${dept.desc}</p>
-        </div>
-      `).join('');
-    }
-    
-    function renderPlugins(filter = null) {
-      const list = document.getElementById('plugin-list');
-      const filtered = filter ? plugins.filter(p => p.dept === filter) : plugins;
-      list.innerHTML = filtered.map(plugin => `
-        <div class="plugin-card" onclick="installPlugin('${plugin.id}')">
-          <div class="plugin-icon">${plugin.icon}</div>
-          <div class="plugin-info">
-            <h4>${plugin.name}</h4>
-            <p>${plugin.desc}</p>
-            <span class="plugin-price">${plugin.price}</span>
-          </div>
-          <button class="install-btn">安装</button>
-        </div>
-      `).join('');
-    }
-    
-    function renderModelSelector() {
-      const selector = document.getElementById('model-selector');
-      selector.innerHTML = models.map(model => `
-        <button class="model-chip ${model.id === state.currentModel ? 'active' : ''}" 
-                onclick="selectModel('${model.id}')">
-          ${model.icon} ${model.name}
-        </button>
-      `).join('');
-    }
-    
-    // ==================== 页面切换 ====================
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    // 加载用户数据
+    async function loadUserData() {
+      if (!isLoggedIn) return;
       
-      document.getElementById(`page-${pageId}`)?.classList.add('active');
-      document.querySelector(`nav a[data-page="${pageId}"]`)?.classList.add('active');
-    }
-    
-    // ==================== 部门选择 ====================
-    function selectDept(deptId) {
-      state.currentDept = deptId;
-      const dept = departments.find(d => d.id === deptId);
-      
-      showPage('chat');
-      
-      // 添加系统消息
-      addMessage('ai', `已进入 ${dept.name} ${dept.icon}\n\n我可以帮你：\n${dept.desc}\n\n有什么需要帮忙的吗？`);
-      
-      // 清空对话
-      document.getElementById('chat-messages').innerHTML = '';
-      addMessage('ai', `已进入 ${dept.name} ${dept.icon}\n\n我可以帮你：\n${dept.desc}\n\n有什么需要帮忙的吗？`);
-    }
-    
-    // ==================== 模型选择 ====================
-    function selectModel(modelId) {
-      state.currentModel = modelId;
-      const model = models.find(m => m.id === modelId);
-      renderModelSelector();
-      showToast(`已切换到 ${model.name}`, 'success');
-    }
-    
-    // ==================== 发送消息 ====================
-    async function sendMessage() {
-      const input = document.getElementById('chat-input');
-      const message = input.value.trim();
-      
-      if (!message) return;
-      
-      // 检查令牌
-      if (state.tokens <= 0) {
-        showToast('令牌不足，请先充值！', 'error');
-        return;
-      }
-      
-      // 添加用户消息
-      addMessage('user', message);
-      input.value = '';
-      
-      // 显示加载状态
-      showTyping();
+      const token = localStorage.getItem('aimum_token');
       
       try {
-        // 调用 AI API
-        const response = await callAI(message);
+        // 获取 Token 统计
+        const statsRes = await fetch(`${API_TOKENS}/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const statsData = await statsRes.json();
         
-        // 隐藏加载
-        hideTyping();
-        
-        // 添加 AI 消息
-        addMessage('ai', response);
-        
-        // 扣除令牌
-        state.tokens--;
-        updateTokenDisplay();
-        saveState();
-        
+        if (statsData.success) {
+          document.getElementById('tokenBalance').textContent = statsData.data.balance || 0;
+          document.getElementById('chatCount').textContent = Math.floor((statsData.data.totalConsumed || 0) / 10);
+        }
       } catch (error) {
-        hideTyping();
-        addMessage('ai', '抱歉，出错了。请重试。');
-        console.error(error);
+        console.error('加载用户数据失败:', error);
       }
     }
     
-    // ==================== AI API 调用 ====================
-    async function callAI(message) {
-      // 这里后续对接 OpenClaw Gateway
-      // 现在先用模拟回复
+    // 初始化侧边栏
+    function initSidebar() {
+      const sidebar = document.getElementById('sidebar');
       
-      const dept = state.currentDept || 'general';
-      
-      // 模拟延迟
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // 根据部门返回不同回复
-      const responses = {
-        sales: `作为你的销售部助手，我建议：\n\n1. 先了解客户需求\n2. 突出产品价值\n3. 解决异议\n4. 促成转化\n\n你需要我帮你写销售话术吗？`,
-        
-        marketing: `作为市场部，我可以帮你：\n\n• 小红书种草文案\n• 抖音脚本\n• 公众号推文\n• 广告投放策略\n\n想先做哪个？`,
-        
-        finance: `财务部为您服务：\n\n• 收支记录\n• 报表生成\n• 发票管理\n• 税务提醒\n\n需要哪项帮助？`,
-        
-        admin: `行政部听候差遣：\n\n• 日程管理\n• 会议提醒\n• 任务分配\n• 协作对接\n\n请指示！`,
-        
-        tech: `技术部上线！\n\n• 代码审查\n• Bug 修复\n• 部署上线\n• 技术咨询\n\n需要帮忙吗？`,
-        
-        custom: `收到！我会根据你的指示来执行。\n\n有什么具体需求？`,
-        
-        general: `你好！我是 AImum 🦁\n\n选择上方的部门开始工作，或者直接问我问题。\n\n我会尽力帮你！`
-      };
-      
-      return responses[dept] || responses.general;
-      
-      // 后续对接真实 API：
-      // const response = await fetch('/api/chat', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ message, model: state.currentModel, dept: state.currentDept })
-      // });
-      // return response.json().then(data => data.reply);
+      // 点击遮罩关闭侧边栏
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024) {
+          if (!sidebar.contains(e.target) && !e.target.classList.contains('menu-toggle')) {
+            sidebar.classList.remove('open');
+          }
+        }
+      });
     }
     
-    // ==================== 消息显示 ====================
-    function addMessage(role, content) {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = `message ${role}`;
-      div.innerHTML = content.replace(/\n/g, '<br>');
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+    // 切换侧边栏
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
     }
     
-    function showTyping() {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = 'message ai';
-      div.id = 'typing';
-      div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+    // 初始化导航
+    function initNavigation() {
+      // 更新导航激活状态
+      const path = window.location.pathname;
+      document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+        const page = item.getAttribute('data-page');
+        if (path.includes(page)) {
+          item.classList.add('active');
+        }
+      });
     }
     
-    function hideTyping() {
-      document.getElementById('typing')?.remove();
+    // 导航到页面
+    function navigateTo(url) {
+      window.location.href = url;
     }
     
-    // ==================== 插件 ====================
-    function installPlugin(pluginId) {
-      const plugin = plugins.find(p => p.id === pluginId);
-      if (state.installedPlugins.includes(pluginId)) {
-        showToast('已安装', 'success');
-        return;
+    // 快捷操作
+    function quickAction(action) {
+      switch (action) {
+        case 'newChat':
+          navigateTo('/chat.html');
+          break;
+        case 'converter':
+          window.open('https://lumingjiankang.netlify.app/', '_blank');
+          break;
+        case 'code':
+          navigateTo('/chat.html?role=coder');
+          break;
+        case 'writer':
+          navigateTo('/chat.html?role=writer');
+          break;
       }
-      state.installedPlugins.push(pluginId);
-      showToast(`${plugin.name} 安装成功！`, 'success');
     }
     
-    // ==================== 令牌 ====================
-    function updateTokenDisplay() {
-      document.getElementById('token-count').textContent = state.tokens;
-      document.getElementById('balance').textContent = state.tokens;
+    // 使用插件
+    function usePlugin(pluginId) {
+      navigateTo(`/chat.html?plugin=${pluginId}`);
     }
     
-    function saveState() {
-      localStorage.setItem('aimum_tokens', state.tokens.toString());
+    // 打开外部链接
+    function openExternal(url) {
+      window.open(url, '_blank');
     }
     
-    // ==================== 登录 ====================
-    function handleLogin(e) {
-      e.preventDefault();
-      const phone = document.getElementById('phone').value;
-      
-      if (!phone || phone.length < 11) {
-        showToast('请输入正确的手机号', 'error');
-        return;
-      }
-      
-      // 模拟登录成功
-      state.user = { phone };
-      state.tokens = 20; // 新用户 20 令牌
-      
-      localStorage.setItem('aimum_user', JSON.stringify(state.user));
-      updateTokenDisplay();
-      saveState();
-      
-      document.getElementById('login-modal').classList.remove('visible');
-      document.getElementById('user-name').textContent = phone.slice(-4);
-      showToast('登录成功！送你 20 令牌', 'success');
-    }
-    
+    // 退出登录
     function logout() {
-      localStorage.removeItem('aimum_user');
-      localStorage.removeItem('aimum_tokens');
-      state.user = null;
-      state.tokens = 0;
-      document.getElementById('login-modal').classList.add('visible');
-      showToast('已退出', 'success');
+      if (confirm('确定要退出登录吗？')) {
+        localStorage.removeItem('aimum_token');
+        localStorage.removeItem('aimum_user');
+        window.location.href = '/auth.html';
+      }
     }
     
-    // ==================== Toast ====================
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = `toast ${type} visible`;
-      
-      setTimeout(() => {
-        toast.classList.remove('visible');
-      }, 3000);
-    }
-    
-    // ==================== PWA ====================
+    // 注册 Service Worker (PWA)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(console.error);
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.log('Service Worker 注册失败:', err);
+      });
     }
   </script>
 </body>
