@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AImum - 工作流引擎</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #667eea;
+      --bg: #0f0f23;
+      --card: #1a1a2e;
+      --card-hover: #252542;
+      --text: #e2e8f0;
+      --text-dim: #a0aec0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .subtitle {
+      color: var(--text-dim);
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab:hover {
+      background: var(--card-hover);
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .toolbar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a67d8;
+    }
+    
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--card-hover);
+    }
+    
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 12px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    /* 工作流卡片 */
+    .workflows-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    
+    .workflow-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .workflow-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+    
+    .workflow-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .workflow-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), #764ba2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    
+    .workflow-info {
+      flex: 1;
+    }
+    
+    .workflow-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .workflow-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    
+    .workflow-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .workflow-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .workflow-badge.enabled {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    
+    .workflow-badge.disabled {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-dim);
+    }
+    
+    .workflow-steps {
+      display: flex;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .step-preview {
+      display: flex;
+      align-items: center;
+    }
+    
+    .step-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--card-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    
+    .step-arrow {
+      color: var(--text-dim);
+      margin: 0 8px;
+    }
+    
+    /* 模板区域 */
+    .templates-section {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .templates-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    
+    .template-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    
+    .template-card:hover {
+      border-color: var(--primary);
+    }
+    
+    .template-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .template-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    
+    .template-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    /* 执行历史 */
+    .executions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .execution-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .execution-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .execution-icon.running {
+      background: rgba(102, 126, 234, 0.2);
+    }
+    
+    .execution-icon.completed {
+      background: rgba(16, 185, 129, 0.2);
+    }
+    
+    .execution-icon.failed {
+      background: rgba(239, 68, 68, 0.2);
+    }
+    
+    .execution-info {
+      flex: 1;
+    }
+    
+    .execution-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .execution-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    
+    .execution-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .execution-status.running {
+      background: rgba(102, 126, 234, 0.2);
+      color: var(--primary);
+    }
+    
+    .execution-status.completed {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    
+    .execution-status.failed {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .toolbar {
+        flex-direction: column;
+      }
+      
+      .search-input {
+        width: 100%;
+      }
+      
+      .workflows-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔄 工作流引擎</h1>
+      <p class="subtitle">自动化任务流程，提升工作效率</p>
+    </header>
+    
+    <!-- 标签页 -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('workflows')">
+        📋 我的工作流
+      </button>
+      <button class="tab" onclick="switchTab('templates')">
+        📦 模板库
+      </button>
+      <button class="tab" onclick="switchTab('executions')">
+        📊 执行历史
+      </button>
+    </div>
+    
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <input type="text" class="search-input" placeholder="搜索工作流..." onkeyup="searchWorkflows(event)">
+      <button class="btn btn-primary" onclick="showCreateModal()">
+        ➕ 创建工作流
+      </button>
+      <button class="btn btn-secondary" onclick="refreshData()">
+        🔄 刷新
+      </button>
+    </div>
+    
+    <!-- 模板区域 -->
+    <div class="templates-section" id="templatesSection">
+      <div class="templates-title">
+        🚀 快速开始 - 从模板创建
+      </div>
+      <div class="templates-grid" id="templatesGrid">
+        <!-- 模板会动态加载 -->
+      </div>
+    </div>
+    
+    <!-- 工作流列表 -->
+    <div class="workflows-grid" id="workflowsGrid">
+      <!-- 工作流会动态加载 -->
+    </div>
+    
+    <!-- 执行历史 -->
+    <div class="executions-list" id="executionsList" style="display: none;">
+      <!-- 执行记录会动态加载 -->
+    </div>
+  </div>
+  
+  <script>
+    const API_BASE = '/api/workflow';
+    let currentTab = 'workflows';
+    let workflows = [];
+    let templates = [];
+    let executions = [];
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTemplates();
+      loadWorkflows();
+      loadExecutions();
+    });
+    
+    // 切换标签页
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.toggle('active', t.textContent.toLowerCase().includes(tab));
+      });
+      
+      document.getElementById('templatesSection').style.display = tab === 'templates' ? 'block' : 'none';
+      document.getElementById('workflowsGrid').style.display = tab === 'workflows' ? 'grid' : 'none';
+      document.getElementById('executionsList').style.display = tab === 'executions' ? 'flex' : 'none';
+      
+      if (tab === 'executions') {
+        loadExecutions();
+      }
+    }
+    
+    // 加载模板
+    async function loadTemplates() {
+      try {
+        const res = await fetch(`${API_BASE}/templates`);
+        const data = await res.json();
+        
+        if (data.success) {
+          templates = data.data.templates;
+          renderTemplates();
+        }
+      } catch (error) {
+        console.error('加载模板失败:', error);
+      }
+    }
+    
+    // 渲染模板
+    function renderTemplates() {
+      const grid = document.getElementById('templatesGrid');
+      
+      grid.innerHTML = templates.map(template => `
+        <div class="template-card" onclick="createFromTemplate('${template.id}')">
+          <div class="template-icon">${template.icon}</div>
+          <div class="template-name">${template.name}</div>
+          <div class="template-desc">${template.description}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 从模板创建
+    async function createFromTemplate(templateId) {
+      try {
+        const res = await fetch(`${API_BASE}/from-template`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ templateId })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ 工作流创建成功！');
+          loadWorkflows();
+          switchTab('workflows');
+        } else {
+          alert('创建失败: ' + data.error);
+        }
+      } catch (error) {
+        console.error('创建失败:', error);
+        alert('创建失败，请重试');
+      }
+    }
+    
+    // 加载工作流
+    async function loadWorkflows(search = '') {
+      try {
+        let url = `${API_BASE}/workflows`;
+        if (search) {
+          url += `?search=${encodeURIComponent(search)}`;
+        }
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.success) {
+          workflows = data.data.workflows;
+          renderWorkflows();
+        }
+      } catch (error) {
+        console.error('加载工作流失败:', error);
+      }
+    }
+    
+    // 渲染工作流
+    function renderWorkflows() {
+      const grid = document.getElementById('workflowsGrid');
+      
+      if (workflows.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">暂无工作流</div>
+            <p>从模板库创建或手动创建新工作流</p>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = workflows.map(workflow => `
+        <div class="workflow-card" onclick="openWorkflow('${workflow.workflowId}')">
+          <div class="workflow-header">
+            <div class="workflow-icon">${workflow.icon || '📋'}</div>
+            <div class="workflow-info">
+              <div class="workflow-name">${workflow.name}</div>
+              <div class="workflow-desc">${workflow.description || '暂无描述'}</div>
+              <span class="workflow-badge ${workflow.enabled ? 'enabled' : 'disabled'}">
+                ${workflow.enabled ? '已启用' : '已禁用'}
+              </span>
+            </div>
+          </div>
+          <div class="workflow-meta">
+            <span>📝 ${workflow.steps?.length || 0} 个步骤</span>
+            <span>🏷️ ${workflow.category || '自定义'}</span>
+          </div>
+          <div class="workflow-steps">
+            <div class="step-preview">
+              ${renderStepPreview(workflow.steps)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 渲染步骤预览
+    function renderStepPreview(steps) {
+      if (!steps || steps.length === 0) return '<span style="color: var(--text-dim)">无步骤</span>';
+      
+      const icons = {
+        'ai-chat': '🤖',
+        'ai-analysis': '📈',
+        'approval': '✅',
+        'condition': '🔀',
+        'notification': '📱',
+        'webhook': '🔗',
+        'data-fetch': '📥',
+        'delay': '⏰'
+      };
+      
+      return steps.slice(0, 3).map((step, i) => `
+        <div class="step-dot">${icons[step.type] || '📋'}</div>
+        ${i < Math.min(2, steps.length - 1) ? '<span class="step-arrow">→</span>' : ''}
+      `).join('') + (steps.length > 3 ? '<span class="step-dot" style="background: var(--card-hover)">+' + (steps.length - 3) + '</span>' : '');
+    }
+    
+    // 搜索工作流
+    function searchWorkflows(event) {
+      loadWorkflows(event.target.value);
+    }
+    
+    // 打开工作流详情
+    function openWorkflow(workflowId) {
+      window.location.href = `/workflow.html?id=${workflowId}`;
+    }
+    
+    // 显示创建模态框
+    function showCreateModal() {
+      alert('创建工作流功能开发中...\n\n可以使用模板快速创建工作流！');
+    }
+    
+    // 加载执行历史
+    async function loadExecutions() {
+      try {
+        const res = await fetch(`${API_BASE}/executions`);
+        const data = await res.json();
+        
+        if (data.success) {
+          executions = data.data.executions;
+          renderExecutions();
+        }
+      } catch (error) {
+        console.error('加载执行历史失败:', error);
+      }
+    }
+    
+    // 渲染执行历史
+    function renderExecutions() {
+      const list = document.getElementById('executionsList');
+      
+      if (executions.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">暂无执行记录</div>
+            <p>运行工作流后会显示执行历史</p>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = executions.map(exec => `
+        <div class="execution-item">
+          <div class="execution-icon ${exec.status}">
+            ${exec.status === 'running' ? '🔄' : exec.status === 'completed' ? '✅' : '❌'}
+          </div>
+          <div class="execution-info">
+            <div class="execution-name">${exec.workflowName}</div>
+            <div class="execution-meta">
+              开始时间: ${new Date(exec.createdAt).toLocaleString()}
+            </div>
+          </div>
+          <span class="execution-status ${exec.status}">
+            ${exec.status === 'running' ? '执行中' : exec.status === 'completed' ? '已完成' : '失败'}
+          </span>
+        </div>
+      `).join('');
+    }
+    
+    // 刷新数据
+    function refreshData() {
+      loadTemplates();
+      loadWorkflows();
+      loadExecutions();
+      alert('✅ 数据已刷新！');
+    }
+  </script>
+</body>
+</html>

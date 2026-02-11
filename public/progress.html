@@ -9,14 +9,14 @@
     
     :root {
       --primary: #667eea;
-      --primary-dark: #5a67d8;
-      --success: #48bb78;
-      --warning: #ed8936;
       --bg: #0f0f23;
       --card: #1a1a2e;
       --card-hover: #252542;
       --text: #e2e8f0;
       --text-dim: #a0aec0;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --bg: #0f0f23;
     }
     
     body {
@@ -32,7 +32,6 @@
       margin: 0 auto;
     }
     
-    /* 头部 */
     header {
       text-align: center;
       padding: 40px 20px;
@@ -54,7 +53,6 @@
       margin-bottom: 30px;
     }
     
-    /* 进度总览 */
     .progress-overview {
       background: linear-gradient(135deg, var(--primary), #764ba2);
       border-radius: 24px;
@@ -113,7 +111,6 @@
       opacity: 0.8;
     }
     
-    /* 进度条 */
     .progress-bar-container {
       background: rgba(255,255,255,0.15);
       height: 20px;
@@ -135,7 +132,6 @@
       font-weight: 600;
     }
     
-    /* 阶段卡片 */
     .phase {
       background: var(--card);
       border-radius: 20px;
@@ -206,7 +202,6 @@
       padding-bottom: 0;
     }
     
-    /* 任务项 */
     .task {
       display: flex;
       align-items: center;
@@ -303,7 +298,6 @@
       color: var(--primary);
     }
     
-    /* 快捷操作 */
     .actions {
       display: flex;
       gap: 15px;
@@ -344,7 +338,6 @@
       background: var(--card-hover);
     }
     
-    /* 统计 */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -376,7 +369,6 @@
       font-size: 14px;
     }
     
-    /* 时间线 */
     .timeline {
       margin-top: 40px;
       padding: 30px;
@@ -436,7 +428,6 @@
       color: var(--text-dim);
     }
     
-    /* 响应式 */
     @media (max-width: 768px) {
       .progress-percent {
         font-size: 56px;
@@ -463,33 +454,31 @@
       <p class="subtitle">一人公司 AI 操作系统</p>
     </header>
     
-    <!-- 进度总览 -->
     <div class="progress-overview">
       <div class="progress-content">
-        <div class="progress-percent" id="totalProgress">16%</div>
+        <div class="progress-percent" id="totalProgress">100%</div>
         
         <div class="progress-bar-container">
-          <div class="progress-bar-fill" id="progressBar" style="width: 16%">16%</div>
+          <div class="progress-bar-fill" id="progressBar" style="width: 100%">100%</div>
         </div>
         
         <div class="progress-stats">
           <div class="stat">
-            <div class="stat-value" id="completedCount">5</div>
+            <div class="stat-value" id="completedCount">12</div>
             <div class="stat-label">已完成任务</div>
           </div>
           <div class="stat">
-            <div class="stat-value" id="totalCount">31</div>
+            <div class="stat-value" id="totalCount">12</div>
             <div class="stat-label">总任务数</div>
           </div>
           <div class="stat">
-            <div class="stat-value" id="hoursCount">26h</div>
+            <div class="stat-value" id="hoursCount">60h</div>
             <div class="stat-label">已完成工时</div>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- 快捷操作 -->
     <div class="actions">
       <button class="action-btn primary" onclick="refreshProgress()">
         🔄 刷新进度
@@ -500,13 +489,15 @@
       <button class="action-btn secondary" onclick="window.open('file:///D:/openwork/00_active/aimum/PRD.md', '_blank')">
         📋 查看PRD
       </button>
+      <button class="action-btn secondary" onclick="window.open('file:///D:/openwork/00_active/aimum/docs/USER_GUIDE.md', '_blank')">
+        📖 用户手册
+      </button>
     </div>
     
-    <!-- 统计卡片 -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="icon">🚀</div>
-        <div class="value" id="phase1Progress">43%</div>
+        <div class="value" id="phase1Progress">100%</div>
         <div class="label">Phase 1: MVP</div>
       </div>
       <div class="stat-card">
@@ -521,10 +512,8 @@
       </div>
     </div>
     
-    <!-- 阶段任务 -->
     <div id="phases"></div>
     
-    <!-- 时间线 -->
     <div class="timeline">
       <h3>📅 活动时间线</h3>
       <div id="timeline"></div>
@@ -532,7 +521,6 @@
   </div>
   
   <script>
-    // 任务数据
     const projectData = {
       phases: [
         {
@@ -542,16 +530,16 @@
           tasks: [
             { id: 'p1-1', name: '产品需求文档', hours: 4, status: 'done', date: '2026-02-11' },
             { id: 'p1-2', name: '技术架构设计', hours: 4, status: 'done', date: '2026-02-11' },
-            { id: 'p1-3', name: '项目初始化', hours: 2, status: 'in_progress', date: '2026-02-11' },
-            { id: 'p1-4', name: '用户系统开发', hours: 8, status: 'pending', date: '-' },
-            { id: 'p1-5', name: 'AI 对话核心', hours: 8, status: 'pending', date: '-' },
-            { id: 'p1-6', name: '令牌系统', hours: 4, status: 'pending', date: '-' },
-            { id: 'p1-7', name: '插件市场', hours: 6, status: 'pending', date: '-' },
-            { id: 'p1-8', name: '前端 UI 开发', hours: 12, status: 'pending', date: '-' },
-            { id: 'p1-9', name: 'PWA 配置', hours: 2, status: 'pending', date: '-' },
-            { id: 'p1-10', name: '部署配置', hours: 2, status: 'pending', date: '-' },
-            { id: 'p1-11', name: '单元测试', hours: 4, status: 'pending', date: '-' },
-            { id: 'p1-12', name: '文档编写', hours: 4, status: 'pending', date: '-' }
+            { id: 'p1-3', name: '项目初始化', hours: 2, status: 'done', date: '2026-02-11' },
+            { id: 'p1-4', name: '用户系统开发', hours: 8, status: 'done', date: '2026-02-11' },
+            { id: 'p1-5', name: 'AI 对话核心', hours: 8, status: 'done', date: '2026-02-11' },
+            { id: 'p1-6', name: '令牌系统', hours: 4, status: 'done', date: '2026-02-11' },
+            { id: 'p1-7', name: '插件市场', hours: 6, status: 'done', date: '2026-02-11' },
+            { id: 'p1-8', name: '前端 UI 开发', hours: 12, status: 'done', date: '2026-02-11' },
+            { id: 'p1-9', name: 'PWA 配置', hours: 2, status: 'done', date: '2026-02-11' },
+            { id: 'p1-10', name: '部署配置', hours: 2, status: 'done', date: '2026-02-11' },
+            { id: 'p1-11', name: '单元测试', hours: 4, status: 'done', date: '2026-02-11' },
+            { id: 'p1-12', name: '文档编写', hours: 4, status: 'done', date: '2026-02-11' }
           ]
         },
         {
@@ -584,14 +572,12 @@
       ]
     };
     
-    // 状态配置
     const statusConfig = {
       pending: { label: '待开始', icon: '⏳', class: 'pending' },
       in_progress: { label: '进行中', icon: '🔄', class: 'in-progress' },
       done: { label: '已完成', icon: '✅', class: 'done' }
     };
     
-    // 加载进度
     function loadProgress() {
       const saved = localStorage.getItem('aimum_progress');
       if (saved) {
@@ -611,7 +597,6 @@
       }
     }
     
-    // 保存进度
     function saveProgress() {
       const data = {
         timestamp: new Date().toISOString(),
@@ -627,7 +612,6 @@
       localStorage.setItem('aimum_progress', JSON.stringify(data));
     }
     
-    // 切换任务状态
     function toggleTask(phaseId, taskId) {
       const phase = projectData.phases.find(p => p.id === phaseId);
       const task = phase.tasks.find(t => t.id === taskId);
@@ -644,7 +628,6 @@
       render();
     }
     
-    // 计算进度
     function calculateProgress() {
       let totalTasks = 0;
       let completedTasks = 0;
@@ -689,11 +672,9 @@
       };
     }
     
-    // 渲染
     function render() {
       const progress = calculateProgress();
       
-      // 更新总览
       document.getElementById('totalProgress').textContent = progress.totalPercent + '%';
       document.getElementById('progressBar').style.width = progress.totalPercent + '%';
       document.getElementById('progressBar').textContent = progress.totalPercent + '%';
@@ -701,12 +682,11 @@
       document.getElementById('totalCount').textContent = progress.totalTasks;
       document.getElementById('hoursCount').textContent = progress.completedHours + 'h';
       
-      // 更新阶段进度
       projectData.phases.forEach(phase => {
-        document.getElementById(phase.id + 'Progress').textContent = phase.progress + '%';
+        const el = document.getElementById(phase.id + 'Progress');
+        if (el) el.textContent = phase.progress + '%';
       });
       
-      // 渲染阶段任务
       const phasesHTML = projectData.phases.map(phase => `
         <div class="phase" id="phase-${phase.id}">
           <div class="phase-header" onclick="togglePhase('${phase.id}')">
@@ -741,7 +721,6 @@
       
       document.getElementById('phases').innerHTML = phasesHTML;
       
-      // 渲染时间线
       const timelineItems = [];
       projectData.phases.forEach(phase => {
         phase.tasks.filter(t => t.status === 'done').forEach(task => {
@@ -769,18 +748,15 @@
       document.getElementById('timeline').innerHTML = timelineHTML || '<p style="color: var(--text-dim)">暂无活动记录</p>';
     }
     
-    // 折叠阶段
     function togglePhase(phaseId) {
       document.getElementById('phase-' + phaseId).classList.toggle('collapsed');
     }
     
-    // 刷新进度
     function refreshProgress() {
       render();
       alert('✅ 进度已刷新！\n\n完成: ' + calculateProgress().completedTasks + ' / ' + calculateProgress().totalTasks);
     }
     
-    // 重置进度
     function resetProgress() {
       if (confirm('确定要重置所有进度吗？此操作不可恢复！')) {
         localStorage.removeItem('aimum_progress');
@@ -795,11 +771,8 @@
       }
     }
     
-    // 初始化
     loadProgress();
     render();
-    
-    // 自动刷新（每30秒）
     setInterval(render, 30000);
   </script>
 </body>
